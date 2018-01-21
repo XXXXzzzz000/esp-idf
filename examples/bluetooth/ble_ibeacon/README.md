@@ -7,3 +7,6 @@ This example demonstrates iBeacon-compatible BLE advertising, and scanning of iB
 iBeacon is a trademark of Apple Inc.
 
 Before building devices which use iBeacon technology, visit https://developer.apple.com/ibeacon/ to obtain a license.
+
+
+

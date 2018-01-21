@@ -20,3 +20,5 @@ You just need to include esp_eddystone_protocol.h, esp_eddystone_api.h and esp_e
 esp_eddystone_demo.c
 ======================
 This is an example/demo of using esp_eddystone_protocol.h, esp_eddystone_api.h and esp_eddystone_api.c files to resolve eddystone packet.
+
+
