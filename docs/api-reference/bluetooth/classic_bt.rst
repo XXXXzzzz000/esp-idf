@@ -1,10 +1,9 @@
-CLASSIC BT
+经典蓝牙
 ==========
 
 .. toctree::
-   :caption: Classic BT
+   :caption: 经典蓝牙
 
    BT GAP <esp_gap_bt>
    BT A2DP <esp_a2dp>
    BT AVRC <esp_avrc>
-   BT SPP <esp_spp>

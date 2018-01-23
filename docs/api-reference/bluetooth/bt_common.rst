@@ -1,8 +1,8 @@
-BT COMMON
-=========
+BT 通用说明
+========================
 
 .. toctree::
-   :caption: Bluetooth Common Defines and APIs
+   :caption: Bluetooth 通用定义和 API
 
    Bluetooth DEFINE <esp_bt_defs>
    Bluetooth MAIN <esp_bt_main>

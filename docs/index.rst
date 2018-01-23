@@ -1,7 +1,16 @@
-ESP-IDF Programming Guide
+ESP-IDF 编程指导(中文版)
 =========================
 
-This is the documentation for Espressif IoT Development Framework (`esp-idf <https://github.com/espressif/esp-idf>`_). ESP-IDF is the official development framework for the `ESP32 <https://espressif.com/en/products/hardware/esp32/overview>`_ chip.
+本文档是为乐鑫 IoT 开发框架（`ESP-IDF <https://github.com/espressif/esp-idf>`_）而设计的文档。ESP-IDF 是 `ESP32 <https://espressif.com/en/products/hardware/esp32/overview>`_ 芯片官方的开发框架。
+
+.. Hint::
+
+   该中文文档非乐鑫官方文档，而是由个人翻译的，以方便广大初学者。
+   
+   文档源码位于 https://github.com/tidyjiang8/esp-idf-zh，欢迎大家 Star、参与翻译。
+
+   个人的能力、精力都非常有限，如果读者在阅读时发现任何翻译有误的地方，请到 `这里 <https://github.com/tidyjiang8/esp-idf-zh/issues/new>`_ 指出，或直接提交PR。
+   
 
 +------------------+------------------+------------------+
 | |Get Started|_   | |API Reference|_ | |H/W Reference|_ |
@@ -33,17 +42,17 @@ This is the documentation for Espressif IoT Development Framework (`esp-idf <htt
 .. _Resources: resources.html
 
 
+
 .. toctree::
    :hidden:
 
-   Get Started <get-started/index>
-   快速入门 <get-started/index-cn> 
-   API Reference <api-reference/index>
-   H/W Reference <hw-reference/index>
-   API Guides <api-guides/index>
-   Contribute <contribute/index>
-   Resources <resources>
-   Copyrights <COPYRIGHT>
-   About <about>
+   快速入门 - Get Started  <get-started/index> 
+   API 参考手册 - API Reference <api-reference/index>
+   硬件参考手册 - H/W Reference <hw-reference/index>
+   API 指导 - API Guides <api-guides/index>
+   贡献代码 - Contribute <contribute/index>
+   资源 - Resources <resources>
+   版权 - Copyrights <COPYRIGHT>
+   关于 - About <about>
 
 * :ref:`genindex`

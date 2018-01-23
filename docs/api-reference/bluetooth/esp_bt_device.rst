@@ -1,21 +1,49 @@
-BT DEVICE APIs
+BT 设备 API
 ===============
 
-Overview
+概述
 --------
 
-Bluetooth device reference APIs.
+蓝牙设备参考 API。
 
 `Instructions`_
 
-Application Example
+应用程序示例
 -------------------
 
 `Instructions`_
 
 .. _Instructions: ../template.html
 
-API Reference
+
+API 参考手册
 -------------
 
-.. include:: /_build/inc/esp_bt_device.inc
+头文件
+^^^^^^^^^^^^
+
+  * :component_file:`bt/bluedroid/api/include/esp_bt_device.h`
+
+
+宏
+^^^^^^
+
+
+类型定义
+^^^^^^^^^^^^^^^^
+
+
+枚举
+^^^^^^^^^^^^
+
+
+结构体
+^^^^^^^^^^
+
+
+函数
+^^^^^^^^^
+
+.. doxygenfunction:: esp_bt_dev_get_address
+.. doxygenfunction:: esp_bt_dev_set_device_name
+

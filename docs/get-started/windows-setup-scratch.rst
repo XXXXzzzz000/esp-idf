@@ -1,15 +1,15 @@
 ************************************
-Setup Windows Toolchain from Scratch
+从头开始安装Windows工具链
 ************************************
 
-Setting up the environment gives you some more control over the process, and also provides the information for advanced users to customize the install. The :doc:`pre-built environment <windows-setup>`, addressed to less experienced users, has been prepared by following these steps. 
+设置环境使您可以更好地控制过程，并为高级用户提供信息以自定义安装。针对经验较少的用户:doc:`pre-built environment <windows-setup>`已经准备好了. 
 
-To quickly setup the toolchain in standard way, using a prebuilt environment, proceed to section :doc:`windows-setup`.
+要以标准方式快速设置工具链，请使用预建环境，请参见 :doc:`windows-setup`.
 
 
 .. _configure-windows-toolchain-from-scratch:
 
-Configure Toolchain & Environment from Scratch
+从零开始配置工具链和环境
 ==============================================
 
 This process involves installing MSYS2_, then installing the MSYS2_ and Python packages which ESP-IDF uses, and finally downloading and installing the Xtensa toolchain.
@@ -28,17 +28,11 @@ This process involves installing MSYS2_, then installing the MSYS2_ and Python p
 
 * The ``windows_install_prerequisites.sh`` script will download and install packages for ESP-IDF support, and the ESP32 toolchain.
 
-
-Troubleshooting
-~~~~~~~~~~~~~~~
-
-* While the install script runs, MSYS may update itself into a state where it can no longer operate. You may see errors like the following::
+* During the initial update step, MSYS may update itself into a state where it can no longer operate. You may see errors like the following::
 
      *** fatal error - cygheap base mismatch detected - 0x612E5408/0x612E4408. This problem is probably due to using incompatible versions of the cygwin DLL.
 
   If you see errors like this, close the terminal window entirely (terminating the processes running there) and then re-open a new terminal. Re-run ``windows_install_prerequisites.sh`` (tip: use the up arrow key to see the last run command). The update process will resume after this step.
-
-* MSYS2 is a "rolling" distribution so running the installer script may install newer packages than what is used in the prebuilt environments. If you see any errors that appear to be related to installing MSYS2 packages, please check the `MSYS2-packages issues list`_ for known issues. If you don't see any relevant issues, please `raise an IDF issue`_.
 
 
 MSYS2 Mirrors in China
@@ -50,7 +44,7 @@ To add these mirrors, edit the following two MSYS2 mirrorlist files before runni
 
 Add these lines at the top of ``mirrorlist.mingw32``::
 
-  Server = https://mirrors.ustc.edu.cn/msys2/mingw/i686/
+  Server = http://mirrors.ustc.edu.cn/msys2/mingw/i686/
   Server = http://mirror.bit.edu.cn/msys2/REPOS/MINGW/i686
 
 Add these lines at the top of ``mirrorlist.msys``::
@@ -78,7 +72,7 @@ Alternative Setup: Just download a toolchain
 
 If you already have an MSYS2 install or want to do things differently, you can download just the toolchain here:
 
-https://dl.espressif.com/dl/xtensa-esp32-elf-win32-1.22.0-80-g6c4433a-5.2.0.zip
+https://dl.espressif.com/dl/xtensa-esp32-elf-win32-1.22.0-61-gab8375a-5.2.0.zip
 
 .. note::
 
@@ -92,24 +86,7 @@ https://dl.espressif.com/dl/xtensa-esp32-elf-win32-1.22.0-80-g6c4433a-5.2.0.zip
 Next Steps
 ==========
 
-To carry on with development environment setup, proceed to section :ref:`get-started-get-esp-idf`.
+要继续设置开发环境，请参考 :ref:`get-started-get-esp-idf` 一节。
 
-.. _updating-existing-windows-environment:
-
-Updating The Environment
-========================
-
-When IDF is updated, sometimes new toolchains are required or new system requirements are added to the Windows MSYS2 environment.
-
-Rather than setting up a new environment, you can update an existing Windows environment & toolchain:
-
-- Update IDF to the new version you want to use.
-- Run the ``tools/windows/windows_install_prerequisites.sh`` script inside IDF. This will install any new software packages that weren't previously installed, and download and replace the toolchain with the latest version.
-
-The script to update MSYS2 may also fail with the same errors mentioned under Troubleshooting_.
-
-If you need to support multiple IDF versions concurrently, you can have different independent MSYS2 environments in different directories. Alternatively you can download multiple toolchains and unzip these to different directories, then use the PATH environment variable to set which one is the default.
 
 .. _MSYS2: https://msys2.github.io/
-.. _MSYS2-packages issues list: https://github.com/Alexpux/MSYS2-packages/issues/
-.. _raise an IDF issue: https://github.com/espressif/esp-idf/issues/new

@@ -21,7 +21,7 @@ Compile the Toolchain from Source
 
   - Install either MacPorts_ or homebrew_ package manager. MacPorts needs a full XCode installation, while homebrew only needs XCode command line tools.
     
-    .. _homebrew: https://brew.sh/
+    .. _homebrew: http://brew.sh/
     .. _MacPorts: https://www.macports.org/install.php
 
   - with MacPorts::
@@ -64,4 +64,4 @@ Toolchain will be built in ``~/esp/crosstool-NG/builds/xtensa-esp32-elf``. Follo
 Next Steps
 ==========
 
-To carry on with development environment setup, proceed to section :ref:`get-started-get-esp-idf`.
+要继续设置开发环境，请参考 :ref:`get-started-get-esp-idf` 一节。
