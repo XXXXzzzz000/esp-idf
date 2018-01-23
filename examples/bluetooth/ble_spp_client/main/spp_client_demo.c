@@ -36,7 +36,7 @@
 #define BT_BD_ADDR_STR              "%02x:%02x:%02x:%02x:%02x:%02x"
 #define BT_BD_ADDR_HEX(addr)        addr[0],addr[1],addr[2],addr[3],addr[4],addr[5]
 #define ESP_GATT_SPP_SERVICE_UUID   0xABF0
-#define SCAN_ALL_THE_TIME           0
+#define SCAN_ALL_THE_TIME           0 
 
 struct gattc_profile_inst {
     esp_gattc_cb_t gattc_cb;
@@ -71,11 +71,13 @@ enum{
 };
 
 ///Declare static functions
+//声明静态函数
 static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
 static void esp_gattc_cb(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param);
 static void gattc_profile_event_handler(esp_gattc_cb_event_t event, esp_gatt_if_t gattc_if, esp_ble_gattc_cb_param_t *param);
 
 /* One gatt-based profile one app_id and one gattc_if, this array will store the gattc_if returned by ESP_GATTS_REG_EVT */
+/* 一个基于gatt的配置文件一个app_id和一个gattc_if，这个数组将存储由ESP_GATTS_REG_EVT返回的gattc_if */
 static struct gattc_profile_inst gl_profile_tab[PROFILE_NUM] = {
     [PROFILE_APP_ID] = {
         .gattc_cb = gattc_profile_event_handler,

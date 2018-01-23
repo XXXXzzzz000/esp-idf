@@ -33,6 +33,7 @@
 static const char* DEMO_TAG = "EDDYSTONE_DEMO";
 
 /* declare static functions */
+/* 声明静态函数 */
 static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t* param);
 static void esp_eddystone_show_inform(const esp_eddystone_result_t* res);
 
@@ -105,11 +106,14 @@ static void esp_gap_cb(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t* par
                     esp_err_t ret = esp_eddystone_decode(scan_result->scan_rst.ble_adv, scan_result->scan_rst.adv_data_len, &eddystone_res);
                     if (ret) {
                         // error:The received data is not an eddystone frame packet or a correct eddystone frame packet.
+                        //错误：接收到的数据不是eddystone帧数据包或正确的eddystone帧数据包。
                         // just return
                         return;
                     } else {   
                         // The received adv data is a correct eddystone frame packet.
+                        //接收到的adv数据是正确的eddystone帧数据包。
                         // Here, we get the eddystone infomation in eddystone_res, we can use the data in res to do other things.
+                        //在这里，我们得到了eddystone res中的eddystone信息，我们可以使用res中的数据来做其他事情。
                         // For example, just print them:
                         ESP_LOGI(DEMO_TAG, "--------Eddystone Found----------");
                         esp_log_buffer_hex("EDDYSTONE_DEMO: Device address:", scan_result->scan_rst.bda, ESP_BD_ADDR_LEN);
@@ -144,6 +148,7 @@ void esp_eddystone_appRegister(void)
     ESP_LOGI(DEMO_TAG,"Register callback");
 
     /*<! register the scan callback function to the gap module */
+    /* 将扫描回调函数注册到间隙模块 */
     if((status = esp_ble_gap_register_callback(esp_gap_cb)) != ESP_OK) {
         ESP_LOGE(DEMO_TAG,"gap register error,error code = %x",status);
         return;
@@ -168,5 +173,6 @@ void app_main()
     esp_eddystone_init();
 
     /*<! set scan parameters */
+    /* 设置扫描参数 */
     esp_ble_gap_set_scan_params(&ble_scan_params);
 }
