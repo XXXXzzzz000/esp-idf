@@ -1,7 +1,7 @@
 SPI Slave driver
 =================
 
-概述
+Overview
 --------
 
 The ESP32 has four SPI peripheral devices, called SPI0, SPI1, HSPI and VSPI. SPI0 is entirely dedicated to
@@ -74,69 +74,25 @@ may decide to use DMA for transfers, so these buffers should be allocated in DMA
 
 The amount of data written to the buffers is limited by the ``length`` member of the transaction structure:
 the driver will never read/write more data than indicated there. The ``length`` cannot define the actual
-length of the SPI transaction; this is determined by the master as it drives the clock and CS lines. In
-case the length of the transmission is larger than the buffer length, only the start of the transmission
-will be sent and received. In case the transmission length is shorter than the buffer length, only data up 
-to the length of the buffer will be exchanged.
+length of the SPI transaction; this is determined by the master as it drives the clock and CS lines. The actual length
+transferred can be read from the ``trans_len`` member of the ``spi_slave_transaction_t`` structure after transaction.
+In case the length of the transmission is larger than the buffer length, only the start of the transmission
+will be sent and received, and the ``trans_len`` is set to ``length`` instead of the actual length. It's recommended to
+set ``length`` longer than the maximum length expected if the ``trans_len`` is required.  In case the transmission 
+length is shorter than the buffer length, only data up to the length of the buffer will be exchanged.
 
 Warning: Due to a design peculiarity in the ESP32, if the amount of bytes sent by the master or the length 
 of the transmission queues in the slave driver, in bytes, is not both larger than eight and dividable by 
 four, the SPI hardware can fail to write the last one to seven bytes to the receive buffer.
 
 
-应用程序示例
+Application Example
 -------------------
 
 Slave/master communication: :example:`peripherals/spi_slave`.
 
-API 参考手册
+API Reference
 -------------
 
-头文件
-^^^^^^^^^^^^
-
-  * :component_file:`driver/include/driver/spi_slave.h`
-
-宏
-^^^^^^
-
-.. doxygendefine:: SPI_SLAVE_TXBIT_LSBFIRST
-.. doxygendefine:: SPI_SLAVE_RXBIT_LSBFIRST
-.. doxygendefine:: SPI_SLAVE_BIT_LSBFIRST
-.. doxygendefine:: SPI_SLAVE_POSITIVE_CS
-
-
-
-枚举
-^^^^^^^^^^^^
-
-.. doxygenenum:: spi_host_device_t
-
-类型定义
-^^^^^^^^^^^^^^^^
-
-结构体
-^^^^^^^^^^
-
-.. doxygenstruct:: spi_slave_transaction_t
-  :members:
-
-.. doxygenstruct:: spi_slave_interface_config_t
-  :members:
-
-.. doxygenstruct:: spi_bus_config_t
-  :members:
-
-Be advised that the slave driver does not use the quadwp/quadhd lines and fields in ``spi_bus_config_t`` refering to these lines
-will be ignored and can thus safely be left uninitialized.
-
-
-函数
----------
-
-.. doxygenfunction:: spi_slave_initialize
-.. doxygenfunction:: spi_slave_free
-.. doxygenfunction:: spi_slave_queue_trans
-.. doxygenfunction:: spi_slave_get_trans_result
-.. doxygenfunction:: spi_slave_transmit
+.. include:: /_build/inc/spi_slave.inc
 

@@ -3,25 +3,23 @@
 See also
 --------
 
-- :doc:`FAT 文件系统 <../../api-guides/partition-tables>`
-- :doc:`分区表文档 <../../api-guides/partition-tables>`
+- :doc:`FAT Filesystem <../../api-guides/partition-tables>`
+- :doc:`Partition Table documentation <../../api-guides/partition-tables>`
 
-
-应用程序示例
+Application Example
 -------------------
 
-An example which combines wear levelling driver with FATFS library is provided in ``examples/storage/wear_levelling`` directory. This example initializes the 
-wear levelling driver, mounts FATFS partition, and writes and reads data from it using POSIX and C library APIs. See README.md file in the example directory for more information.
+An example which combines wear levelling driver with FATFS library is provided in ``examples/storage/wear_levelling`` directory. This example initializes the wear levelling driver, mounts FATFS partition, and writes and reads data from it using POSIX and C library APIs. See README.md file in the example directory for more information.
 
-High level API 参考手册
+High level API Reference
 ------------------------
 
-头文件
+Header Files
 ^^^^^^^^^^^^
 
-  * :component_file:`fatfs/src/esp_vfs_fat.h`
+* :component_file:`fatfs/src/esp_vfs_fat.h`
 
-函数
+Functions
 ^^^^^^^^^
 
 .. doxygenfunction:: esp_vfs_fat_spiflash_mount
@@ -29,22 +27,8 @@ High level API 参考手册
     :members:
 .. doxygenfunction:: esp_vfs_fat_spiflash_unmount
 
-Mid level API 参考手册
+Mid level API Reference
 -----------------------
 
-头文件
-^^^^^^^^^^^^
-
-  * :component_file:`wear_levelling/include/wear_levelling.h`
-
-函数
-^^^^^^^^^
-
-.. doxygenfunction:: wl_mount
-.. doxygenfunction:: wl_unmount
-.. doxygenfunction:: wl_erase_range
-.. doxygenfunction:: wl_write
-.. doxygenfunction:: wl_read
-.. doxygenfunction:: wl_size
-.. doxygenfunction:: wl_sector_size
+.. include:: /_build/inc/wear_levelling.inc
 

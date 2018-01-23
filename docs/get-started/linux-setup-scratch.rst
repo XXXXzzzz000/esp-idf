@@ -1,14 +1,14 @@
 **********************************
-Scratch 设置 Linux 工具链
+Setup Linux Toolchain from Scratch
 **********************************
 
-下列指令是可选的，用于从 Espressif 网站下载二进制工具链。如果需呀快速设置工具链，而不是自己编译，请回到 :doc:`linux-setup` 一节。
+The following instructions are alternative to downloading binary toolchain from Espressif website. To quickly setup the binary toolchain, instead of compiling it yourself, backup and proceed to section :doc:`linux-setup`.
 
 
-安装前提
+Install Prerequisites
 =====================
 
-要编译 ESP-IDF，你需要先安装如下的软件包。
+To compile with ESP-IDF you need to get the following packages:
 
 - Ubuntu and Debian::
 
@@ -19,10 +19,10 @@ Scratch 设置 Linux 工具链
     sudo pacman -S --needed gcc git make ncurses flex bison gperf python2-pyserial
 
 
-从源码编译工具链
+Compile the Toolchain from Source
 =================================
 
-- 安装依赖:
+- Install dependencies:
 
   - CentOS 7::
 
@@ -36,31 +36,31 @@ Scratch 设置 Linux 工具链
 
         sudo apt-get install gawk gperf grep gettext python python-dev automake bison flex texinfo help2man libtool libtool-bin
 
-  - Debian::
+  - Debian 9::
 
-        TODO
+        sudo apt-get install gawk gperf grep gettext libncurses-dev python python-dev automake bison flex texinfo help2man libtool libtool-bin
 
   - Arch::
 
         TODO
 
-下载 ``crosstool-NG`` 并编译 ::
+Download ``crosstool-NG`` and build it::
 
     cd ~/esp
     git clone -b xtensa-1.22.x https://github.com/espressif/crosstool-NG.git
     cd crosstool-NG
     ./bootstrap && ./configure --enable-local && make install
 
-编译工具链 ::
+Build the toolchain::
 
     ./ct-ng xtensa-esp32-elf
     ./ct-ng build
     chmod -R u+w builds/xtensa-esp32-elf
 
-工具链将会被编译到 ``~/esp/crosstool-NG/builds/xtensa-esp32-elf``。请参考 :ref:`标准设置指令 <setup-linux-toolchain-add-it-to-path>` 将工具链添加到你的 ``PATH``中。
+Toolchain will be built in ``~/esp/crosstool-NG/builds/xtensa-esp32-elf``. Follow :ref:`instructions for standard setup <setup-linux-toolchain-add-it-to-path>` to add the toolchain to your ``PATH``.
 
 
-后续步骤
+Next Steps
 ==========
 
-要继续设置开发环境，请参考 :ref:`get-started-get-esp-idf` 一节。
+To carry on with development environment setup, proceed to section :ref:`get-started-get-esp-idf`.

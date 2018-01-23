@@ -1,8 +1,8 @@
-低功耗蓝牙
+BT LE
 =========
 
 .. toctree::
-   :caption: 低功耗蓝牙
+   :caption: Bluetooth LE
 
    BLE GAP <esp_gap_ble>
    BLE GATT DEFINE <esp_gatt_defs>

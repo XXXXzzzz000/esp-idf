@@ -1,4 +1,4 @@
-协议 API
+Protocols API
 *************
 
 .. toctree::
@@ -6,4 +6,5 @@
 
    mDNS <mdns>
 
-关于本节 API 的示例代码请参考 ESP-IDF 示例中的 :example:`protocols` 目录。
+
+Example code for this API section is provided in :example:`protocols` directory of ESP-IDF examples.

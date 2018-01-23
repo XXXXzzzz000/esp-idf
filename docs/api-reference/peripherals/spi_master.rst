@@ -1,7 +1,7 @@
 SPI Master driver
 =================
 
-概述
+Overview
 --------
 
 The ESP32 has four SPI peripheral devices, called SPI0, SPI1, HSPI and VSPI. SPI0 is entirely dedicated to
@@ -53,14 +53,29 @@ A transaction on the SPI bus consists of five phases, any of which may be skippe
 
 * The command phase. In this phase, a command (0-16 bit) is clocked out.
 * The address phase. In this phase, an address (0-64 bit) is clocked out.
-* The read phase. The slave sends data to the master.
 * The write phase. The master sends data to the slave.
+* The dummy phase. The phase is configurable, used to meet the timing requirements.
+* The read phase. The slave sends data to the master.
 
 In full duplex, the read and write phases are combined, causing the SPI host to read and
-write data simultaneously.
+write data simultaneously. The total transaction length is decided by 
+``command_bits + address_bits + trans_conf.length``, while the ``trans_conf.rx_length``
+only determins length of data received into the buffer.
+
+In half duplex, the length of write phase and read phase are decided by ``trans_conf.length`` and 
+``trans_conf.rx_length`` respectively. ** Note that a half duplex transaction with both a read and 
+write phase is not supported when using DMA. ** If such transaction is needed, you have to use one 
+of the alternative solutions:
+
+  1. use full-duplex mode instead.
+  2. disable the DMA by set the last parameter to 0 in bus initialization function just as belows:
+     ``ret=spi_bus_initialize(VSPI_HOST, &buscfg, 0);``  
+
+     this may prohibit you from transmitting and receiving data longer than 32 bytes.
+  3. try to use command and address field to replace the write phase.
 
 The command and address phase are optional in that not every SPI device will need to be sent a command
-and/or address. Tis is reflected in the device configuration: when the ``command_bits`` or ``data_bits``
+and/or address. This is reflected in the device configuration: when the ``command_bits`` or ``address_bits``
 fields are set to zero, no command or address phase is done.
 
 Something similar is true for the read and write phase: not every transaction needs both data to be written
@@ -88,14 +103,35 @@ Using the spi_master driver
 - Optional: to remove the driver for a bus, make sure no more drivers are attached and call 
   ``spi_bus_free``.
 
+Command and address phases
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Transaction data
-^^^^^^^^^^^^^^^^
+During the command and address phases, ``cmd`` and ``addr`` field in the
+``spi_transaction_t`` struct are sent to the bus, while nothing is read at the
+same time. The default length of command and address phase are set in the
+``spi_device_interface_config_t`` and by ``spi_bus_add_device``. When the the
+flag ``SPI_TRANS_VARIABLE_CMD`` and ``SPI_TRANS_VARIABLE_ADDR`` are not set in
+the ``spi_transaction_t``,the driver automatically set the length of these 
+phases to the default value as set when the device is initialized respectively.
+
+If the length of command and address phases needs to be variable, declare a
+``spi_transaction_ext_t`` descriptor, set the flag ``SPI_TRANS_VARIABLE_CMD`` 
+or/and ``SPI_TRANS_VARIABLE_ADDR`` in the ``flags`` of ``base`` member and 
+configure the rest part of ``base`` as usual. Then the length of each phases 
+will be ``command_bits`` and ``address_bits`` set in the ``spi_transaction_ext_t``.
+
+Write and read phases
+^^^^^^^^^^^^^^^^^^^^^
 
 Normally, data to be transferred to or from a device will be read from or written to a chunk of memory
-indicated by the ``rx_buffer`` and ``tx_buffer`` members of the transaction structure. The SPI driver
-may decide to use DMA for transfers, so these buffers should be allocated in DMA-capable memory using 
-``pvPortMallocCaps(size, MALLOC_CAP_DMA)``.
+indicated by the ``rx_buffer`` and ``tx_buffer`` members of the transaction structure. 
+When DMA is enabled for transfers, these buffers are highly recommended to meet the requirements as belows:
+
+  1. allocated in DMA-capable memory using ``pvPortMallocCaps(size, MALLOC_CAP_DMA)``;
+  2. 32-bit aligned (start from the boundary and have length of multiples of 4 bytes).
+
+If these requirements are not satisfied, efficiency of the transaction will suffer due to the allocation and 
+memcpy of temporary buffers.
 
 Sometimes, the amount of data is very small making it less than optimal allocating a separate buffer
 for it. If the data to be transferred is 32 bits or less, it can be stored in the transaction struct
@@ -104,68 +140,20 @@ on the transmission. For received data, use ``rx_data`` and set ``SPI_USE_RXDATA
 not touch the ``tx_buffer`` or ``rx_buffer`` members, because they use the same memory locations
 as ``tx_data`` and ``rx_data``.
 
-应用程序示例
+Application Example
 -------------------
  
-Display graphics on the ILI9341-based 320x240 LCD: :example:`peripherals/spi_master`.
-
-API 参考手册
--------------
-
-头文件
-^^^^^^^^^^^^
-
-  * :component_file:`driver/include/driver/spi_master.h`
-
-宏
-^^^^^^
-
-.. doxygendefine:: SPI_DEVICE_TXBIT_LSBFIRST
-.. doxygendefine:: SPI_DEVICE_RXBIT_LSBFIRST
-.. doxygendefine:: SPI_DEVICE_BIT_LSBFIRST
-.. doxygendefine:: SPI_DEVICE_3WIRE
-.. doxygendefine:: SPI_DEVICE_POSITIVE_CS
-.. doxygendefine:: SPI_DEVICE_HALFDUPLEX
-.. doxygendefine:: SPI_DEVICE_CLK_AS_CS
-
-.. doxygendefine:: SPI_TRANS_MODE_DIO
-.. doxygendefine:: SPI_TRANS_MODE_QIO
-.. doxygendefine:: SPI_TRANS_MODE_DIOQIO_ADDR
-.. doxygendefine:: SPI_TRANS_USE_RXDATA
-.. doxygendefine:: SPI_TRANS_USE_TXDATA
-
-类型定义
-^^^^^^^^^^^^^^^^
-
-.. doxygentypedef:: spi_device_handle_t
-
-枚举
-^^^^^^^^^^^^
-
-.. doxygenenum:: spi_host_device_t
-
-结构体
-^^^^^^^^^^
-
-.. doxygenstruct:: spi_transaction_t
-  :members:
-
-.. doxygenstruct:: spi_bus_config_t
-  :members:
-
-.. doxygenstruct:: spi_device_interface_config_t
-  :members:
+Display graphics on the 320x240 LCD of WROVER-Kits: :example:`peripherals/spi_master`.
 
 
+API Reference - SPI Common
+--------------------------
 
-函数
----------
+.. include:: /_build/inc/spi_common.inc
 
-.. doxygenfunction:: spi_bus_initialize
-.. doxygenfunction:: spi_bus_free
-.. doxygenfunction:: spi_bus_add_device
-.. doxygenfunction:: spi_bus_remove_device
-.. doxygenfunction:: spi_device_queue_trans
-.. doxygenfunction:: spi_device_get_trans_result
-.. doxygenfunction:: spi_device_transmit
+
+API Reference - SPI Master
+--------------------------
+
+.. include:: /_build/inc/spi_master.inc
 

@@ -1,8 +1,8 @@
 **************************************
-为 Mac OS 设置标准工具链
+Standard Setup of Toolchain for Mac OS
 **************************************
 
-安装前提
+Install Prerequisites
 =====================
 
 - install pip::
@@ -14,40 +14,41 @@
     sudo pip install pyserial
 
 
-工具链的设置
+Toolchain Setup
 ===============
 
-macOS 版的 ESP32 工具链可以从 Espressif 的网站下载：
+ESP32 toolchain for macOS is available for download from Espressif website:
 
-https://dl.espressif.com/dl/xtensa-esp32-elf-osx-1.22.0-61-gab8375a-5.2.0.tar.gz
+https://dl.espressif.com/dl/xtensa-esp32-elf-osx-1.22.0-80-g6c4433a-5.2.0.tar.gz
 
-下载完成后，将它解压到 ``~/esp`` 目录 ::
+Download this file, then extract it in ``~/esp`` directory::
 
     mkdir -p ~/esp
     cd ~/esp
-    tar -xzf ~/Downloads/xtensa-esp32-elf-osx-1.22.0-61-gab8375a-5.2.0.tar.gz
+    tar -xzf ~/Downloads/xtensa-esp32-elf-osx-1.22.0-80-g6c4433a-5.2.0.tar.gz
 
 .. _setup-macos-toolchain-add-it-to-path:
 
-工具链将会被解压到 ``~/esp/xtensa-esp32-elf/`` 目录。
+The toolchain will be extracted into ``~/esp/xtensa-esp32-elf/`` directory.
 
-要使用工具链，你还需要在 ``~/.profile`` 文件中更新环境变量 ``PATH``。要使 ``xtensa-esp32-elf`` 在所有的终端会话中有效，需要将下面这一行代码添加到你的 ``~/.profile`` 文件中 ::
+To use it, you will need to update your ``PATH`` environment variable in ``~/.profile`` file. To make ``xtensa-esp32-elf`` available for all terminal sessions, add the following line to your ``~/.profile`` file::
 
     export PATH=$PATH:$HOME/esp/xtensa-esp32-elf/bin
 
-可选地，你也可以给上面的命令创建一个别名。这样的好处是，你只在需要使用它的时候才获取工具链。你只需要将下面这行代码添加到 ``~/.profile`` 文件中即可 ::
+Alternatively, you may create an alias for the above command. This way you can get the toolchain only when you need it. To do this, add different line to your ``~/.profile`` file::
 
     alias get_esp32="export PATH=$PATH:$HOME/esp/xtensa-esp32-elf/bin"
 
-然后，当你需要使用工具链时，在命令行输入 ``get_esp32``，然后工具链会自动添加到你的 ``PATH``中。
+Then when you need the toolchain you can type ``get_esp32`` on the command line and the toolchain will be added to your ``PATH``.
 
-后续步骤
+
+Next Steps
 ==========
 
-要继续设置开发环境，请参考 :ref:`get-started-get-esp-idf` 一节。
+To carry on with development environment setup, proceed to section :ref:`get-started-get-esp-idf`.
 
 
-相关文档
+Related Documents
 =================
 
 .. toctree::

@@ -2,25 +2,25 @@
 IDF Monitor
 ***********
 
-idf_monitor 是一个用 Python 编写的工具程序。当你在 IDF 中调用 ``make monitor`` 目标时，该程序会被执行。
+The idf_monitor tool is a Python program which runs when the ``make monitor`` target is invoked in IDF.
 
-idf_monitor 的主要功能是进行串口通信，将串行数据转发到目标设备的串行端口或者或者获取端口中传递出来的数据。此外，它还有一些其它的与 IDF 相关的功能。
+It is mainly a serial terminal program which relays serial data to and from the target device's serial port, but it has some other IDF-specific xfeatures.
 
-与 idf_monitor 交互
+Interacting With idf_monitor
 ============================
 
-- ``Ctrl-]`` 将退出 monitor。
-- ``Ctrl-T Ctrl-H`` 将显示一个带有键盘快捷键的帮助菜单。
-- 除 ``Ctrl-]`` 和 ``Ctrl-T`` 之外的其它键都会通过串行端口发送出去。
+- ``Ctrl-]`` will exit the monitor.
+- ``Ctrl-T Ctrl-H`` will display a help menu with all other keyboard shortcuts.
+- Any other key apart from ``Ctrl-]`` and ``Ctrl-T`` is sent through the serial port.
 
-对地址自动解码
+Automatically Decoding Addresses
 ================================
 
-在任何时候，只要 esp-idf 打印出类似于 ``0x4_______`` 形式的十六进制代码时，idf_monitor 都会使用 addr2line_ 来查看源代码的位置和函数名。
+Any time esp-idf prints a hexadecimal code address of the form ``0x4_______``, idf_monitor will use addr2line_ to look up the source code location and function name.
 
 .. highlight:: none
 
-当 esp-idf 的应用程序 crash 或者 panic 时，将会产生一个像下面这样的寄存器 dump 和 backtrace ::
+When an esp-idf app crashes and panics a register dump and backtrace such as this is produced::
 
     Guru Meditation Error of type StoreProhibited occurred on core  0. Exception was unhandled.
     Register dump:
@@ -33,7 +33,7 @@ idf_monitor 的主要功能是进行串口通信，将串行数据转发到目�
 
     Backtrace: 0x400f360d:0x3ffb7e00 0x400dbf56:0x3ffb7e20 0x400dbf5e:0x3ffb7e40 0x400dbf82:0x3ffb7e60 0x400d071d:0x3ffb7e90
 
-idf_monitor 将会增加 dump ::
+idf_monitor will augment the dump::
 
     Guru Meditation Error of type StoreProhibited occurred on core  0. Exception was unhandled.
     Register dump:
@@ -54,61 +54,80 @@ idf_monitor 将会增加 dump ::
     0x400dbf82: app_main at /home/gus/esp/32/idf/examples/get-started/hello_world/main/./hello_world_main.c:33
     0x400d071d: main_task at /home/gus/esp/32/idf/components/esp32/./cpu_start.c:254
 
-对于上面到结果，idf_monitor 其实在后台运行了下面的命令来对每个地址进行解码的 ::
+Behind the scenes, the command idf_monitor runs to decode each address is::
 
-  xtensa-esp32-elf-addr2line -pfia -e build/PROJECT.elf ADDRESS
+  xtensa-esp32-elf-addr2line -pfiaC -e build/PROJECT.elf ADDRESS
 
-为 GDBStub 加载 GDB
+
+Launch GDB for GDBStub
 ======================
 
-默认情况下，如果 esp-idf 应用程序崩溃（crash）了，panic handler 会打印像上面展示的寄存器和栈 dump 消息，然后复位。
+By default, if an esp-idf app crashes then the panic handler prints registers and a stack dump as shown above, and then resets.
 
-可选地，panic handler 可以被配置为去运行一个串行 “gdb stub”。“gdb stub” 可以与 gdb_ 调试程序通信，从而对内存进行读取，对变量和栈帧进行检查等等。这种功能虽然不如 JTAG 那样强大，但是不需要额外的硬件即可完成。
+Optionally, the panic handler can be configured to run a serial "gdb stub" which can communicate with a gdb_ debugger program and allow memory to be read, variables and stack frames examined, etc. This is not as versatile as JTAG debugging, but no special hardware is required.
 
-要使能 gdbstub，请运行 ``make menuconfig`` 并进入 ``Component config`` -> ``ESP32-specific`` -> ``Panic handler behaviour``，然后将其设为 ``Invoke GDBStub``。
+To enable the gdbstub, run ``make menuconfig`` and set :ref:`CONFIG_ESP32_PANIC` option to ``Invoke GDBStub``.
 
-如果该选项被使能且 idf_monitor 能看到 gdb stub，则它会暂停监视串口并使用正确的参数运行 GDB。当 GDB 退出后，板子会通过 RST 串行线复位（如果连接了该线）。
+If this option is enabled and idf_monitor sees the gdb stub has loaded, it will automatically pause serial monitoring and run GDB with the correct arguments. After GDB exits, the board will be reset via the RTS serial line (if this is connected.)
 
-在这北湖，idf_monitor 运行了如下目录 ::
+Behind the scenes, the command idf_monitor runs is::
 
   xtensa-esp32-elf-gdb -ex "set serial baud BAUD" -ex "target remote PORT" -ex interrupt build/PROJECT.elf
 
 
-快速编译和烧写
+Quick Compile and Flash
 =======================
 
-键盘快捷键 ``Ctrl-T Ctrl-F`` 会暂停 idf_monitor 并运行 ``make flash`` 目标，然后恢复 idf_monitor。任何有改动的源文件都会在重新烧写前被重新编译。
+The keyboard shortcut ``Ctrl-T Ctrl-F`` will pause idf_monitor, run the ``make flash`` target, then resume idf_monitor. Any changed source files will be recompiled before re-flashing.
 
-键盘快捷键 ``Ctrl-T Ctrl-A`` 会暂停 idf-monitor 鳖你个运行 ``make app-flash`` 目标，然后恢复 idf_monitor。.这与 ``make flash`` 很相似，但是只会编译和重新烧写 main app。
+The keyboard shortcut ``Ctrl-T Ctrl-A`` will pause idf-monitor, run the ``make app-flash`` target, then resume idf_monitor. This is similar to ``make flash``, but only the main app is compiled and reflashed.
 
-快速复位
+
+Quick Reset
 ===========
 
-键盘快捷键 ``Ctrl-T Ctrl-R`` 会通过 RTS 线对开发板进行复位（如果连接了该线）。
+The keyboard shortcut ``Ctrl-T Ctrl-R`` will reset the target board via the RTS line (if it is connected.)
+
+
+Pause the Application
+=====================
+
+The keyboard shortcut ``Ctrl-T Ctrl-P`` will reset the target into bootloader, so that the board will run nothing. This is
+useful when you want to wait for another device to startup. Then shortcut ``Ctrl-T Ctrl-R`` can be used to restart the
+application.
+
+
+Toggle Output Display
+=====================
+
+Sometimes you may want to stop new output printed to screen, to see the log before. The keyboard shortcut ``Ctrl-T Ctrl-Y`` will
+toggle the display (discard all serial data when the display is off) so that you can stop to see the log, and revert
+again quickly without quitting the monitor.
 
 
 Simple Monitor
 ==============
 
-早期版本的 ESP-IDF 使用 pySerial_ 命令行程序 miniterm_ 作为串口控制台程序。
+Earlier versions of ESP-IDF used the pySerial_ command line program miniterm_ as a serial console program.
 
-这个程序选择任然可以运行，通过 ``make simple_monitor`` 命令。
+This program can still be run, via ``make simple_monitor``.
 
-idf_monitor 是基于 miniterm 的，它共享了相同的键盘快捷键。
+idf_monitor is based on miniterm and shares the same basic keyboard shortcuts.
 
 
-idf_monitor 的已知问题
+Known Issues with idf_monitor
 =============================
 
-在 Windows 上看到的问题
+Issues Observed on Windows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- 如果你在使用 Windows 环境且接收到了错误 "winpty: command not found"，需要运行 ``pacman -S winpty`` 来修复该错误。
-- 方向键或者一些其它的特殊键在 gdb 中不工作，这是又有 Windows 控制台的限制。
-- 有时候，当 "make" 退出时，它可能最高暂停 30 秒才能恢复 idf_monitor。
-- 有时候，当 "gdb" 运行时，它可能会暂停一会儿才能与 gdbstub 通信。
+- If you are using the supported Windows environment and receive the error "winpty: command not found" then run ``pacman -S winpty`` to fix.
+- Arrow keys and some other special keys in gdb don't work, due to Windows Console limitations.
+- Occasionally when "make" exits, it may stall for up to 30 seconds before idf_monitor resumes.
+- Occasionally when "gdb" is run, it may stall for a short time before it begins communicating with the gdbstub.
+
 
 .. _addr2line: https://sourceware.org/binutils/docs/binutils/addr2line.html
 .. _gdb: https://sourceware.org/gdb/download/onlinedocs/
 .. _pySerial: https://github.com/pyserial/pyserial
-.. _miniterm: http://pyserial.readthedocs.org/en/latest/tools.html#module-serial.tools.miniterm
+.. _miniterm: https://pyserial.readthedocs.org/en/latest/tools.html#module-serial.tools.miniterm

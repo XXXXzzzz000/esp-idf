@@ -12,8 +12,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
-import os
+import sys, os
 import re
 from subprocess import call, Popen, PIPE
 import shlex
@@ -24,10 +23,18 @@ import shlex
 sys.path.insert(0, os.path.abspath('.'))
 
 from repo_util import run_cmd_get_output
-# -- Run DoxyGen to prepare XML for Sphinx---------------------------------
-# ref. https://github.com/rtfd/readthedocs.org/issues/388
 
+# Call Doxygen to get XML files from the header files
+print "Calling Doxygen to generate latest XML files"
 call('doxygen')
+# Generate 'api_name.inc' files using the XML files by Doxygen
+os.system("python gen-dxd.py")
+# Generate 'kconfig.inc' file from components' Kconfig files
+os.system("python gen-kconfig-doc.py > _build/inc/kconfig.inc")
+
+# http://stackoverflow.com/questions/12772927/specifying-an-online-image-in-sphinx-restructuredtext-format
+# 
+suppress_warnings = ['image.nonlocal_uri']
 
 # -- General configuration ------------------------------------------------
 
@@ -37,7 +44,23 @@ call('doxygen')
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['breathe', 'link-roles']
+extensions = ['breathe',
+              'link-roles',
+              'sphinxcontrib.blockdiag',
+              'sphinxcontrib.seqdiag',
+              'sphinxcontrib.actdiag',
+              'sphinxcontrib.nwdiag',
+              'sphinxcontrib.rackdiag',
+              'sphinxcontrib.packetdiag'
+             ]
+
+# Set up font for blockdiag, nwdiag, rackdiag and packetdiag
+blockdiag_fontpath = '_static/DejaVuSans.ttf'
+seqdiag_fontpath = '_static/DejaVuSans.ttf'
+actdiag_fontpath = '_static/DejaVuSans.ttf'
+nwdiag_fontpath = '_static/DejaVuSans.ttf'
+rackdiag_fontpath = '_static/DejaVuSans.ttf'
+packetdiag_fontpath = '_static/DejaVuSans.ttf'
 
 # Breathe extension variables
 breathe_projects = { "esp32-idf": "xml/" }
@@ -47,7 +70,11 @@ breathe_default_project = "esp32-idf"
 templates_path = ['_templates']
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
+
+source_parsers = {
+       '.md': 'recommonmark.parser.CommonMarkParser',
+    }
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
@@ -88,7 +115,7 @@ print 'Version: {0}  Release: {1}'.format(version, release)
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build','README.md']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -119,13 +146,7 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-try:
-    import sphinx_rtd_theme
-except ImportError:
-    html_theme = 'default'
-else:
-    html_theme = "sphinx_rtd_theme"
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+html_theme = 'default'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -290,17 +311,10 @@ texinfo_documents = [
 # on_rtd is whether we are on readthedocs.org
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
-# otherwise, readthedocs.org uses their theme by default, so no need to specify it
-html_context = {
-    'display_github': True,
-    'github_user': 'tidyjiang8',
-    'github_repo': 'esp-idf-zh',
-    'github_version': 'zh/docs/' 
-}
-
 if not on_rtd:  # only import and set the theme if we're building docs locally
     import sphinx_rtd_theme
     html_theme = 'sphinx_rtd_theme'
     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
+# otherwise, readthedocs.org uses their theme by default, so no need to specify it
 
