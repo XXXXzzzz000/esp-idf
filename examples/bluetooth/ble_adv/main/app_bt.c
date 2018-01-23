@@ -114,7 +114,7 @@ static uint16_t make_cmd_ble_set_adv_enable(uint8_t *buf, uint8_t adv_enable)
     return HCI_H4_CMD_PREAMBLE_SIZE + HCIC_PARAM_SIZE_WRITE_ADV_ENABLE;
 }
 /* 创建 设置ble广播参数 命令 */
-static uint16_t n make_cmd_ble_set_adv_param(uint8_t *buf, uint16_t adv_int_min, uint16_t adv_int_max,
+static uint16_t make_cmd_ble_set_adv_param(uint8_t *buf, uint16_t adv_int_min, uint16_t adv_int_max,
                                            uint8_t adv_type, uint8_t addr_type_own,
                                            uint8_t addr_type_dir, bd_addr_t direct_bda,
                                            uint8_t channel_map, uint8_t adv_filter_policy)
