@@ -1,4 +1,5 @@
-# ESP-IDF SPP GATT客户端演示
+# ESP-IDF SPP(Serial Port Profile) GATT客户端演示
+[SPP](https://baike.baidu.com/item/%E8%93%9D%E7%89%99%E4%B8%B2%E5%8F%A3)
 
 ## 1.概述
 
