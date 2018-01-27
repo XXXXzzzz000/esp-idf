@@ -560,11 +560,10 @@ static esp_gatt_srvc_id_t remote_service_id = {
     .is_primary = true,
 };
 ```
-//FIXME:有点不对
+
 一旦定义好了，我们就可以使用 `esp_ble_gattc_get_characteristic()` 函数从服务中获得特性，该函数将会在 搜索服务完成事件 `ESP_GATTC_SEARCH_CMPL_EVT` 中调用。
 
 ```c
-    
 case ESP_GATTC_SEARCH_CMPL_EVT:
 if (p_data->search_cmpl.status != ESP_GATT_OK){
     ESP_LOGE(GATTC_TAG, "search service failed, error status = %x", p_data->search_cmpl.status);
@@ -617,56 +616,6 @@ if (get_server){
 break;
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 `esp_ble_gattc_get_attr_count()` 获得gattc缓存中给定服务或特性的属性数量。 `esp_ble_gattc_get_attr_count()` 函数的参数是GATT接口，连接ID，`esp_gatt_db_attr_type_t`中定义的属性类型，属性起始句柄，属性结束句柄，特征句柄（该参数仅在类型为设置为`ESP_GATT_DB_DESCRIPTOR`时有效。），并输出在给定属性类型的gattc缓存中找到的属性编号。然后我们分配一个缓冲区来保存`esp_ble_gattc_get_char_by_uuid()` 函数的字符信息。该函数在gattc缓存中查找具有给定特征UUID的特征。它只是从本地缓存中获得特性，而不是远程设备。在服务器中，可能有多个字符共享相同的UUID。然而，在我们的gatt_server演示中，每个char都有一个唯一的UUID，这就是为什么我们只使用指向服务特性的指针-`char_elem_result`中的第一个字符。 Count最初存储了客户端想要查找的特性的数量，并且将用`esp_ble_gattc_get_char_by_uuid`在gattc缓存中实际找到的特性的数量进行更新。
 
 ## 注册通知
@@ -675,19 +624,19 @@ break;
 
 ```c
 …
-/*  Every service have only one char in our 'ESP_GATTS_DEMO' demo, so we used first 'char_elem_result' */
-                    if(count > 0 && (char_elem_result[0].properties & 
-                                                   ESP_GATT_CHAR_PROP_BIT_NOTIFY)){
-                        gl_profile_tab[PROFILE_A_APP_ID].char_handle = 
-                                       char_elem_result[0].char_handle;
-                        esp_ble_gattc_register_for_notify (gattc_if, 
-                                         gl_profile_tab[PROFILE_A_APP_ID].remote_bda,       
-                                         char_elem_result[0].char_handle);
+/*  每个服务在我们的 'ESP_GATTS_DEMO' 演示中只有一个字符，所以我们首先使用'char_elem_result' */
+                    if(count > 0 && 
+                      (char_elem_result[0].properties & ESP_GATT_CHAR_PROP_BIT_NOTIFY)){
+                        gl_profile_tab[PROFILE_A_APP_ID].char_handle = char_elem_result[0].char_handle;
+                        esp_ble_gattc_register_for_notify ( gattc_if, 
+                                                            gl_profile_tab[PROFILE_A_APP_ID].remote_bda,       
+                                                            char_elem_result[0].char_handle);
                                 }
+
 …
 ```
 
-This procedure registers notifications to the BLE stack, and triggers an `ESP_GATTC_REG_FOR_NOTIFY_EVT`. This event is used to write to the server Client Configuration Descriptor:
+此过程将通知注册到BLE堆栈，并触发 `ESP_GATTC_REG_FOR_NOTIFY_EVT` 事件。 此事件用于向服务器写入客户机配置描述符：
 
 ```c
     case ESP_GATTC_REG_FOR_NOTIFY_EVT: {
@@ -699,12 +648,12 @@ This procedure registers notifications to the BLE stack, and triggers an `ESP_GA
             uint16_t count = 0;
             uint16_t notify_en = 1;
             esp_gatt_status_t ret_status = esp_ble_gattc_get_attr_count( gattc_if,
-                                               gl_profile_tab[PROFILE_A_APP_ID].conn_id,                                                                          
-                                               ESP_GATT_DB_DESCRIPTOR,
-                                gl_profile_tab[PROFILE_A_APP_ID].service_start_handle,                                                         
-                                gl_profile_tab[PROFILE_A_APP_ID].service_end_handle,
-                                gl_profile_tab[PROFILE_A_APP_ID].char_handle,
-                                                                         &count);
+                                                gl_profile_tab[PROFILE_A_APP_ID].conn_id,
+                                                ESP_GATT_DB_DESCRIPTOR,
+                                                gl_profile_tab[PROFILE_A_APP_ID].service_start_handle,
+                                                gl_profile_tab[PROFILE_A_APP_ID].service_end_handle,
+                                                gl_profile_tab[PROFILE_A_APP_ID].char_handle,
+                                                &count);
             if (ret_status != ESP_GATT_OK){
                 ESP_LOGE(GATTC_TAG, "esp_ble_gattc_get_attr_count error");
             }
@@ -713,27 +662,27 @@ This procedure registers notifications to the BLE stack, and triggers an `ESP_GA
                 if (!descr_elem_result){
                     ESP_LOGE(GATTC_TAG, "malloc error, gattc no mem");
                 }else{
-                    ret_status = esp_ble_gattc_get_descr_by_char_handle( gattc_if,                                                              
-                                          gl_profile_tab[PROFILE_A_APP_ID].conn_id,
-                                                     p_data->reg_for_notify.handle,                                                             
-                                                                 notify_descr_uuid,
-                                                                 descr_elem_result,
-                                                                         &count);
+                    ret_status = esp_ble_gattc_get_descr_by_char_handle( gattc_if,
+                                            gl_profile_tab[PROFILE_A_APP_ID].conn_id,
+                                            p_data->reg_for_notify.handle,
+                                            notify_descr_uuid,
+                                            descr_elem_result,
+                                            &count);
                     if (ret_status != ESP_GATT_OK){
-                        ESP_LOGE(GATTC_TAG, "esp_ble_gattc_get_descr_by_char_handle   
-                                                                            error");
+                        ESP_LOGE(GATTC_TAG, "esp_ble_gattc_get_descr_by_char_handle error");
                     }
 
-                    /* Erery char have only one descriptor in our 'ESP_GATTS_DEMO' demo, so we used first 'descr_elem_result' */
-                    if (count > 0 && descr_elem_result[0].uuid.len == ESP_UUID_LEN_16 &&   
-descr_elem_result[0].uuid.uuid.uuid16 == ESP_GATT_UUID_CHAR_CLIENT_CONFIG){
-                        ret_status = esp_ble_gattc_write_char_descr( gattc_if,                                                      
-                                      gl_profile_tab[PROFILE_A_APP_ID].conn_id,                                                                 
-                                                  descr_elem_result[0].handle,
-                                                             sizeof(notify_en),
-                                                             (Uint8 *)&notify_en,                                                                     
-                                                          ESP_GATT_WRITE_TYPE_RSP,                                                                    
-                                                           ESP_GATT_AUTH_REQ_NONE);
+                    /* 每个服务在我们的 'ESP_GATTS_DEMO' 演示中只有一个字符，所以我们首先使用'char_elem_result' */
+                    if (count > 0 &&
+                        descr_elem_result[0].uuid.len == ESP_UUID_LEN_16 &&
+                        descr_elem_result[0].uuid.uuid.uuid16 == ESP_GATT_UUID_CHAR_CLIENT_CONFIG){
+                        ret_status = esp_ble_gattc_write_char_descr( gattc_if,
+                                        gl_profile_tab[PROFILE_A_APP_ID].conn_id,
+                                        descr_elem_result[0].handle,
+                                        sizeof(notify_en),
+                                        (Uint8 *)&notify_en,
+                                        ESP_GATT_WRITE_TYPE_RSP,
+                                        ESP_GATT_AUTH_REQ_NONE);
                     }
 
                     if (ret_status != ESP_GATT_OK){
@@ -753,7 +702,7 @@ descr_elem_result[0].uuid.uuid.uuid16 == ESP_GATT_UUID_CHAR_CLIENT_CONFIG){
     }
 ```
 
-The event is used to first print the notification register status and the service and characteristic UUIDs of the just registered notifications. The client then writes to the Client Configuration Descriptor by using the `esp_ble_gattc_write_char_descr()` function. There are many characteristic descriptors defined in the Bluetooth specification. However, in this case we are interested in writing to the descriptor that deals with enabling notifications, which is the Client Configuration descriptor. In order to pass this descriptor as parameter, we first define it as:
+该事件用于首先打印通知注册状态以及刚注册的通知的服务和特征UUID。 客户端然后通过使用 `esp_ble_gattc_write_char_descr()` 函数写入客户端配置描述符。 蓝牙规范中定义了许多特征描述符。 但是，在这种情况下，我们有兴趣写入处理启用通知的描述符，这是客户端配置描述符。 为了传递这个描述符作为参数，我们首先将它定义为：
 
 ```c
 static esp_gatt_id_t notify_descr_id = {
@@ -764,16 +713,16 @@ static esp_gatt_id_t notify_descr_id = {
     .inst_id = 0,
 };
 ```
-Where `ESP_GATT_UUID_CHAR_CLIENT_CONFIG` is defined with the UUID to identify the Characteristic Client Configuration:
+其中 `ESP_GATT_UUID_CHAR_CLIENT_CONFIG` 用UUID定义以标识特征客户端配置：
 
 ```c
-#define ESP_GATT_UUID_CHAR_CLIENT_CONFIG            0x2902          /*  Client Characteristic Configuration */
+#define ESP_GATT_UUID_CHAR_CLIENT_CONFIG            0x2902          /*  客户端特性配置 */
 ```
-The value to write is “1” to enable notifications. We also pass `ESP_GATT_WRITE_TYPE_RSP` to request that the server responds to the request of enabling notifications and `ESP_GATT_AUTH_REQ_NONE` to indicate that the Write request does not need authorization.
+要写入的值是“1”以启用通知。 我们也通过`ESP_GATT_WRITE_TYPE_RSP`来请求服务器响应启用通知的请求，并且`ESP_GATT_AUTH_REQ_NONE`指示写请求不需要授权。
 
 
 
-## Conclusion
+## 结论
 
-We have reviewed the GATT Client example code for the ESP32. This example scans for nearby devices and searches for services and characteristics of servers of interest. When the server of interest is found, a connection is made with that server and a search for services is performed. Finally, the client looks for a specific characteristic in the services found, if found, gets the characteristic value and registers for notifications to that characteristic. This is done by registering one Application Profile and following a sequence of events to configure the GAP and GATT parameters required.
+我们已经回顾了ESP32的GATT客户端示例代码。 此示例扫描附近的设备并搜索感兴趣的服务器的服务和特征。 当找到感兴趣的服务器时，与该服务器建立连接并执行对服务的搜索。 最后，客户端在找到的服务中寻找一个特定的特征，如果找到，获取特征值并注册该特征的通知。 这是通过注册一个应用程序配置文件并按照一系列事件来配置所需的GAP和GATT参数来完成的。
 
