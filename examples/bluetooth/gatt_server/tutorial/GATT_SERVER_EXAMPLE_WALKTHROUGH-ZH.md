@@ -2,7 +2,7 @@
 
 ## Introduction
 
-在本文中,我们回顾了在ESP32上实现蓝牙低功耗(BLE)通用属性配置文件(GATT)服务器的GATT SERVER示例代码.此示例围绕两个应用程序配置文件和一系列事件进行设计,以便执行一系列配置步骤,例如定义广告参数,更新连接参数以及创建服务和特性.另外,这个例子处理了读写事件,包括Write Long特性请求,它将传入的数据分成块,以便数据能够适应属性协议(ATT)消息.这个文档遵循程序工作流程并分解代码,以便理解实现背后的每个部分和推理.
+在本文中,我们回顾了在ESP32上实现蓝牙低功耗(BLE)通用属性配置文件(GATT)服务器的GATT SERVER示例代码.此示例围绕两个应用程序配置文件和一系列事件进行设计,以便执行一系列配置步骤,例如定义广播参数,更新连接参数以及创建服务和特性.另外,这个例子处理了读写事件,包括Write Long特性请求,它将传入的数据分成块,以便数据能够适应属性协议(ATT)消息.这个文档遵循程序工作流程并分解代码,以便理解实现背后的每个部分和推理.
 
 ## Includes
 
@@ -30,7 +30,7 @@
 
 * `bt.h`:从主机端实现BT控制器和VHCI配置程序.
 * `esp_bt_main.h`:实现Bluedroid栈的初始化和启用.
-* `esp_gap_ble_api.h`:实现GAP配置,例如广告和连接参数.
+* `esp_gap_ble_api.h`:实现GAP配置,例如广播和连接参数.
 * `esp_gatts_api.h`:实现GATT配置,如创建服务和特性.
 
 ## Main Entry Point
@@ -42,7 +42,7 @@
 {
     esp_err_t ret;
 
-    // Initialize NVS.
+    // 初始化 NVS.
     ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
         ESP_ERROR_CHECK(nvs_flash_erase());
@@ -132,7 +132,7 @@ ret = esp_bt_controller_enable(ESP_BT_MODE_BTDM);
 ret = esp_bluedroid_init();
 ret = esp_bluedroid_enable();
 ```
-蓝牙堆栈已经在程序流程中的这一点上运行,但是应用程序的功能尚未定义.该功能是通过对诸如当另一个设备尝试读取或写入参数并建立连接时发生的事件作出反应来定义的.事件的两个主要管理者是GAP和GATT事件处理程序.应用程序需要为每个事件处理程序注册一个回调函数,以便让应用程序知道哪些函数将处理GAP和GATT事件:
+蓝牙堆栈已经在程序流程中的这一点上运行,但是应用程序的功能尚未定义.该功能是通过对诸如当另一个设备尝试读取或写入参数并建立连接时发生的事件作出反应来定义的.事件的两个主要管理者是GAP(Generic Access Profile 通用访问)和GATT事件处理程序.应用程序需要为每个事件处理程序注册一个回调函数,以便让应用程序知道哪些函数将处理GAP和GATT事件:
 
 ```c
 esp_ble_gatts_register_callback(gatts_event_handler);
@@ -149,19 +149,19 @@ GATT服务器示例应用程序通过使用应用程序配置文件进行组织,
 
 每个配置文件被定义为一个结构,其中结构成员依赖于在该应用配置文件中实现的服务和特性.成员还包括一个GATT接口,应用程序ID,连接ID和一个回调函数来处理配置文件事件.在这个例子中,每个配置文件是由以下组成:
 
-*  GATT界面
-* 应用程序ID
-* 连接ID
-* 服务手柄
-* 服务ID
-* 特色手柄
-* 特征UUID
-* 属性权限
-* 特性
-* 客户端特性配置描述符句柄
-* 客户端特性配置描述符UUID
+* GATT interface
+* Application ID
+* Connection ID
+* Service handle
+* Service ID
+* Characteristic handle
+* Characteristic UUID
+* Attribute permissions
+* Characteristic properties
+* Client Characteristic Configuration descriptor handle
+* Client Characteristic Configuration descriptor UUID
 
-从这个结构可以看出,这个轮廓被设计成具有一个服务和一个特征,并且该特征具有一个描述符.该服务有一个句柄和一个ID,每个特征都有一个句柄,一个UUID,属性权限和属性.另外,如果特征支持通知或指示,则它必须实现客户特征配置描述符(CCCD),这是描述是否启用通知或指示并且定义特征如何由特定客户配置的附加属性.这个描述符也有一个句柄和一个UUID.
+从这个结构可以看出,这个profile被设计成具有一个service(服务)和一个characteristic(特征),并且该characteristic具有一个descriptor(描述).该服务有一个handle和一个ID,每个characteristic都有一个handle,一个UUID,attribute permissions(属性权限)和properties(属性).另外,如果characteristic支持notifications(通知)或indications(指示),则它必须实现Client Characteristic Configuration descriptor(客户特征配置描述符)(CCCD),这是描述是否启用通知或指示并且定义特征如何由特定客户配置的附加属性.这个描述符也有一个句柄和一个UUID.
 
 结构实现是:
 
@@ -203,9 +203,9 @@ esp_ble_gatts_app_register(PROFILE_B_APP_ID);
 
 ## Setting GAP Parameters
 
-注册应用程序事件是程序生命周期中第一个触发事件,本例使用Profile A GATT事件句柄来配置注册时的广告参数.此示例可以选择使用标准的蓝牙核心规格广告参数或定制的原始缓冲区.该选项可以通过CONFIG_SET_RAW_ADV_DATA定义来选择.原始的广告数据可以用来实现iBeacons,Eddystone或其他专属,以及用于室内定位服务的定制框架类型,这些定制框架类型与标准规格不同.
+注册应用程序事件是程序生命周期中第一个触发事件,本例使用Profile A GATT事件句柄来配置注册时的广播参数.此示例可以选择使用标准的蓝牙核心规格广播参数或定制的原始缓冲区.该选项可以通过 `CONFIG_SET_RAW_ADV_DATA` 定义来选择.原始的广播数据可以用来实现iBeacons,Eddystone或其他专属,以及用于室内定位服务的定制框架类型,这些定制框架类型与标准规格不同.
 
-用于配置标准蓝牙规范通告参数的函数是`esp_ble_gap_config_adv_data()`,它指向一个`esp_ble_adv_data_t`结构.用于广告数据的`esp_ble_adv_data_t`数据结构具有以下定义:
+用于配置标准蓝牙规范通告参数的函数是`esp_ble_gap_config_adv_data()`,它指向一个`esp_ble_adv_data_t`结构.用于广播数据的`esp_ble_adv_data_t`数据结构具有以下定义:
 
 ```c
 typedef struct {
@@ -243,12 +243,12 @@ static esp_ble_adv_data_t adv_data = {
     .flag = (ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT),
 };
 ```
-最小广告间隔和最大广告间隔设置为1.25毫秒的倍数.在本例中,最小广告时间间隔定义为0x20 * 1.25 ms \x3d 40 ms,最大广告时间间隔初始化为0x40 * 1.25 ms \x3d 80 ms.
+最小广播间隔和最大广播间隔设置为1.25毫秒的倍数.在本例中,最小广播时间间隔定义为0x20 * 1.25 ms \x3d 40 ms,最大广播时间间隔初始化为0x40 * 1.25 ms \x3d 80 ms.
 
-广告有效载荷可以达到31个字节的数据.参数数据可能超过31个字节的通告数据包限制,导致堆栈切断通告数据包,并留下一些参数.在这个例子中,如果制造商的长度和数据都没有注释,这个行为可以被证明,这使得服务在重新编译和测试之后不被公布.
+广播有效载荷可以达到31个字节的数据.参数数据可能超过31个字节的广播数据包限制,导致堆栈切断广播数据包,并留下一些参数.在这个例子中,如果制造商的长度和数据都没有注释,这个行为可以被证明,这使得服务在重新编译和测试之后不被公布.
 
-也可以使用esp_ble_gap_config_adv_data_raw()来公布自定义的原始数据
-和`esp_ble_gap_config_scan_rsp_data_raw()`函数,这些函数需要为广告数据和扫描响应数据创建并传递一个缓冲区.在本例中,原始数据由`raw_adv_data []`和`raw_scan_rsp_data []`数组表示.
+也可以使用`esp_ble_gap_config_adv_data_raw()`来公布自定义的原始数据
+和`esp_ble_gap_config_scan_rsp_data_raw()`函数,这些函数需要为广播数据和扫描响应数据创建并传递一个缓冲区.在本例中,原始数据由`raw_adv_data []`和`raw_scan_rsp_data []`数组表示.
 
 最后,要设置设备名称,使用`esp_ble_gap_set_device_name()`函数.注册事件处理程序如下所示:
 
@@ -291,7 +291,7 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
 ```
 ## GAP Event Handler
 
-一旦广告数据被设置,GAP事件`ESP_GAP_BLE_ADV_DATA_SET_COMPLETE_EVT`被触发.对于原始广告数据集的情况,触发的事件是`ESP_GAP_BLE_ADV_DATA_RAW_SET_COMPLETE_EVT`.另外,当原始扫描响应数据被设置时,触发`ESP_GAP_BLE_SCAN_RSP_DATA_RAW_SET_COMPLETE_EVT`事件.
+一旦广播数据被设置,GAP事件`ESP_GAP_BLE_ADV_DATA_SET_COMPLETE_EVT`被触发.对于原始广播数据集的情况,触发的事件是`ESP_GAP_BLE_ADV_DATA_RAW_SET_COMPLETE_EVT`.另外,当原始扫描响应数据被设置时,触发`ESP_GAP_BLE_SCAN_RSP_DATA_RAW_SET_COMPLETE_EVT`事件.
 
 ```c
 static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
@@ -326,7 +326,7 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
 #endif
 …
 ```
-在任何情况下,服务器都可以使用`esp_ble_gap_start_advertising()`函数开始广告,该函数采用`esp_ble_adv_params_t`类型的结构,其中堆栈需要广告参数进行操作:
+在任何情况下,服务器都可以使用`esp_ble_gap_start_advertising()`函数开始广播,该函数采用`esp_ble_adv_params_t`类型的结构,其中堆栈需要广播参数进行操作:
 
 ```c
 /// Advertising parameters
@@ -354,9 +354,9 @@ typedef struct {
 esp_ble_adv_params_t;
 ```
 
-请注意,`esp_ble_gap_config_adv_data()`配置将要通告给客户端的数据,并采用esp_ble_adv_data_t结构,而esp_ble_gap_start_advertising()使服务器真正开始广告并采用esp_ble_adv_params_t结构.广告数据是显示给客户端的信息,而广告参数是GAP执行所需的配置.
+请注意,`esp_ble_gap_config_adv_data()`配置将要广播给客户端的数据,并采用`esp_ble_adv_data_t`结构,而`esp_ble_gap_start_advertising()`使服务器真正开始广播并采用`esp_ble_adv_params_t`结构.广播数据是显示给客户端的信息,而广播参数是GAP执行所需的配置.
 
-对于这个例子,广告参数被初始化如下:
+对于这个例子,广播参数被初始化如下:
 
 ```c
 static esp_ble_adv_params_t test_adv_params = {
@@ -371,9 +371,9 @@ static esp_ble_adv_params_t test_adv_params = {
 };
 ```
 
-这些参数将广告时间间隔配置为40毫秒到80毫秒.广告是`ADV_IND`,它是通用的,不针对特定的中央设备和可连接类型.地址类型是公共的,使用所有通道并允许来自任何中央的扫描和连接请求.
+这些参数将广播时间间隔配置为40毫秒到80毫秒.广播是`ADV_IND`,它是通用的,不针对特定的中央设备和可连接类型.地址类型是公共的,使用所有通道并允许来自任何中央的扫描和连接请求.
 
-如果广告成功启动,则产生一个`ESP_GAP_BLE_ADV_START_COMPLETE_EVT`事件,在这个例子中用来检查广告状态是否确实是广告.否则,会打印一条错误消息.
+如果广播成功启动,则产生一个`ESP_GAP_BLE_ADV_START_COMPLETE_EVT`事件,在这个例子中用来检查广播状态是否确实是广播.否则,会打印一条错误消息.
 
 ```c
 …
@@ -390,7 +390,9 @@ static esp_ble_adv_params_t test_adv_params = {
 
 注册应用程序配置文件时,将触发`ESP_GATTS_REG_EVT`事件. `ESP_GATTS_REG_EVT`的参数是:
 
-* `esp_gatt_status_t状态* `uint16_t app_id
+* `esp_gatt_status_t status;　/*!< Operation status */`
+* `uint16_t app_id;　　　　　　　/*!< Application id which input in register API */`
+
 除了以前的参数外,事件还包含由BLE堆栈分配的GATT接口.事件被`gatts_event_handler()`捕获,用于将生成的接口存储在配置文件表中,然后事件被转发到相应的配置文件事件处理程序.
  
 ```c
@@ -439,12 +441,12 @@ break;
 #define GATTS_NUM_HANDLE_TEST_A     4
 ```
 
-手柄是:
+这些句柄是:
 
-1. 服务句柄
-2. 特色手柄
-3. 特征值处理
-4. 特征描述符句柄
+1. Service handle 服务句柄
+2. Characteristic handle 特色手柄
+3. Characteristic value handle 特征值处理
+4. Characteristic descriptor handle 特征描述符句柄
 
 该服务被定义为UUID长度为16位的主要服务.服务ID用实例ID = 0和由`GATTS_SERVICE_UUID_TEST_A`定义的UUID初始化.
 
@@ -941,6 +943,6 @@ prepare_write_env->prepare_len = 0;
 ```
 
 ## Conclusion
-在这个文档中,我们已经通过描述每个部分的GATT SERVER示例代码.应用程序是围绕应用程序配置文件的概念设计的.此外,还介绍了此示例用于注册事件处理程序的过程.事件遵循一系列配置步骤,例如定义广告参数,更新连接参数以及创建服务和特性.最后,解释读取和写入事件的处理方式,包括通过将写入划分成适合属性协议消息的块来写入长特征.
+在这个文档中,我们已经通过描述每个部分的GATT SERVER示例代码.应用程序是围绕应用程序配置文件的概念设计的.此外,还介绍了此示例用于注册事件处理程序的过程.事件遵循一系列配置步骤,例如定义广播参数,更新连接参数以及创建服务和特性.最后,解释读取和写入事件的处理方式,包括通过将写入划分成适合属性协议消息的块来写入长特征.
 
 

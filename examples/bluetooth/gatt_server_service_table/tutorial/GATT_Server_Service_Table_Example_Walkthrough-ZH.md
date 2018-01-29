@@ -33,7 +33,7 @@
 
 * `bt.h`:从主机端实现BT控制器和VHCI配置程序.
 * `esp_bt_main.h`:实现Bluedroid栈的初始化和启用.
-* `esp_gap_ble_api.h`:实现广告和连接参数等GAP配置.
+* `esp_gap_ble_api.h`:实现广播和连接参数等GAP配置.
 * `esp_gatts_api.h`:实现GATT服务器配置,如创建服务和特性.
 
 ## Service Table
@@ -60,15 +60,15 @@ enum
 ```
 枚举元素的设置顺序与“心率配置文件”属性的顺序相同,从服务开始,然后是该服务的特征.另外,心率测量特征具有客户特征配置(CCC)描述符,该特征描述符是描述特征是否具有启用通知的附加属性.在创建实际属性表时,枚举索引可用于稍后标识每个元素.总之,这些要素描述如下:
 
-*  HRS_IDX_SVC:心率服务指数
-*  HRS_IDX_HR_MEAS_CHAR:心率测量特征指标
-*  HRS_IDX_HR_MEAS_VAL:心率测量特征值索引
-*  HRS_IDX_HR_MEAS_NTF_CFG:心率测量通知配置(CCC)索引
-*  HRS_IDX_BOBY_SENSOR_LOC_CHAR:心率体感传感器位置特征指标
-*  HRS_IDX_BOBY_SENSOR_LOC_VAL:心率体感传感器位置特征值索引
-*  HRS_IDX_HR_CTNL_PT_CHAR:心率控制点特征指标
-*  HRS_IDX_HR_CTNL_PT_VAL:心率控制点特征值索引
-*  HRS_IDX_NB:表格元素的数量.
+* HRS_IDX_SVC:心率服务指数
+* HRS_IDX_HR_MEAS_CHAR:心率测量特征指标
+* HRS_IDX_HR_MEAS_VAL:心率测量特征值索引
+* HRS_IDX_HR_MEAS_NTF_CFG:心率测量通知配置(CCC)索引
+* HRS_IDX_BOBY_SENSOR_LOC_CHAR:心率体感传感器位置特征指标
+* HRS_IDX_BOBY_SENSOR_LOC_VAL:心率体感传感器位置特征值索引
+* HRS_IDX_HR_CTNL_PT_CHAR:心率控制点特征指标
+* HRS_IDX_HR_CTNL_PT_VAL:心率控制点特征值索引
+* HRS_IDX_NB:表格元素的数量.
 
 ## Main Entry Point
 
@@ -79,7 +79,7 @@ void app_main()
 {
     esp_err_t ret;
 
-    // Initialize NVS.
+    // 初始化 NVS.
     ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
         ESP_ERROR_CHECK(nvs_flash_erase());
@@ -112,7 +112,7 @@ void app_main()
         return;
     }
 
-    esp_ble_gatts_register_callback(gatts_event_handler);
+    esp_ble_gatts_register_callback(   );
     esp_ble_gap_register_callback(gap_event_handler);
     esp_ble_gatts_app_register(ESP_HEART_RATE_APP_ID);
     return;
@@ -127,7 +127,7 @@ ret = nvs_flash_init();
 
 ## BT Controller and Stack Initialization
 
-请参阅**GATT服务器示例演练**中的此部分.
+请参阅**GATT Server Example Walkthrough**中的此部分.
 
 
 ## Application Profiles
@@ -161,12 +161,12 @@ esp_ble_gatts_app_register(ESP_HEART_RATE_APP_ID);
 
 ## Setting GAP Parameters
 
-注册应用程序事件是在程序生命周期中触发的第一个事件.本示例使用此事件在配置文件事件处理程序中注册时配置广告参数.用来实现这个功能的是:
+注册应用程序事件是在程序生命周期中触发的第一个事件.本示例使用此事件在配置文件事件处理程序中注册时配置广播参数.用来实现这个功能的是:
 
 * `esp_ble_gap_set_device_name()`:用于设置通告的设备名称.
-* `esp_ble_gap_config_adv_data()`:用于配置标准的广告数据.
+* `esp_ble_gap_config_adv_data()`:用于配置标准的广播数据.
 
-用来配置标准的蓝牙规范的广告参数的函数是`esp_ble_gap_config_adv_data()`,它指向一个`esp_ble_adv_data_t`结构.用于广告数据的`esp_ble_adv_data_t`数据结构具有以下定义:
+用来配置标准的蓝牙规范的广播参数的函数是`esp_ble_gap_config_adv_data()`,它指向一个`esp_ble_adv_data_t`结构.用于广播数据的`esp_ble_adv_data_t`数据结构具有以下定义:
 
 ```
 typedef struct {
@@ -206,9 +206,9 @@ static esp_ble_adv_data_t heart_rate_adv_config = {
 };
 ```
 
-最小广告间隔和最大广告间隔以0.625 ms为单位设置.在本例中,最小广告时间间隔定义为0x20 * 0.625 ms \x3d 20 ms,最大广告时间间隔初始化为0x40 * 0.625 ms \x3d 40 ms.
+最小广播间隔和最大广播间隔以0.625 ms为单位设置.在本例中,最小广播时间间隔定义为0x20 * 0.625 ms \x3d 20 ms,最大广播时间间隔初始化为0x40 * 0.625 ms \x3d 40 ms.
 
-广告有效载荷可以达到31个字节的数据.有些参数可能会超过31字节的通告数据包限制,这会导致堆栈切断消息,并留下一些参数.为了解决这个问题,通常较长的参数存储在扫描响应中,可以使用相同的`esp_ble_gap_config_adv_data()`功能来配置,而另外一个esp_ble_adv_data_t类型的结构将参数.set_scan_rsp设置为true.最后,要设置设备名称,使用`esp_ble_gap_set_device_name()`功能.注册事件处理程序如下所示:
+广播有效载荷可以达到31个字节的数据.有些参数可能会超过31字节的通告数据包限制,这会导致堆栈切断消息,并留下一些参数.为了解决这个问题,通常较长的参数存储在扫描响应中,可以使用相同的`esp_ble_gap_config_adv_data()`功能来配置,而另外一个esp_ble_adv_data_t类型的结构将参数.set_scan_rsp设置为true.最后,要设置设备名称,使用`esp_ble_gap_set_device_name()`功能.注册事件处理程序如下所示:
 
 ```
 static void gatts_profile_event_handler(esp_gatts_cb_event_t event,
@@ -228,7 +228,7 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event,
 
 ## GAP Event Handler
 
-一旦广告数据被设置,`ESP_GAP_BLE_ADV_DATA_SET_COMPLETE_EVT`由GAP事件处理程序触发和管理.而且,如果扫描响应也被设置,则也触发`ESP_GAP_BLE_SCAN_RSP_DATA_SET_COMPLETE_EVT`.一旦广告和扫描响应数据的配置已经设置,处理程序可以使用这些事件中的任何一个开始广告,这是通过使用esp_ble_gap_start_advertising()函数完成的:
+一旦广播数据被设置,`ESP_GAP_BLE_ADV_DATA_SET_COMPLETE_EVT`由GAP事件处理程序触发和管理.而且,如果扫描响应也被设置,则也触发`ESP_GAP_BLE_SCAN_RSP_DATA_SET_COMPLETE_EVT`.一旦广播和扫描响应数据的配置已经设置,处理程序可以使用这些事件中的任何一个开始广播,这是通过使用esp_ble_gap_start_advertising()函数完成的:
 
 ```
 static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
@@ -251,7 +251,7 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
 }
 ```
 
-开始广告的功能需要一个需要广告参数的`esp_ble_adv_params_t`类型的结构.
+开始广播的功能需要一个需要广播参数的`esp_ble_adv_params_t`类型的结构.
 
 ```
 /// Advertising parameters
@@ -277,9 +277,9 @@ typedef struct {
 } esp_ble_adv_params_t;
 ```
 
-注意`esp_ble_gap_config_adv_data()`配置了通告给客户端的数据,并且使用了`esp_ble_adv_data_t结构`,而`esp_ble_gap_start_advertising()`使服务器真正开始发布广告并且使用`esp_ble_adv_params_t`结构.广告数据是向客户端显示的信息,而广告参数是BLE堆栈执行所需的配置.
+注意`esp_ble_gap_config_adv_data()`配置了通告给客户端的数据,并且使用了`esp_ble_adv_data_t结构`,而`esp_ble_gap_start_advertising()`使服务器真正开始发布广播并且使用`esp_ble_adv_params_t`结构.广播数据是向客户端显示的信息,而广播参数是BLE堆栈执行所需的配置.
 
-对于这个例子,广告参数被初始化如下:
+对于这个例子,广播参数被初始化如下:
 
 ```
 static esp_ble_adv_params_t heart_rate_adv_params = {
@@ -294,9 +294,9 @@ static esp_ble_adv_params_t heart_rate_adv_params = {
 };
 ```
 
-这些参数将广告时间间隔配置为20毫秒到40毫秒.广告的类型是ADV_IND,它是通用的,不针对特定的中央设备,并将服务器通告为可连接的.地址类型是公共的,使用所有通道并允许来自任何中央的扫描和连接请求.
+这些参数将广播时间间隔配置为20毫秒到40毫秒.广播的类型是ADV_IND,它是通用的,不针对特定的中央设备,并将服务器通告为可连接的.地址类型是公共的,使用所有通道并允许来自任何中央的扫描和连接请求.
 
-如果广告成功启动,则生成`ESP_GAP_BLE_ADV_START_COMPLETE_EVT`事件,在该示例中,该事件被用于检查广告状态是否确实广告或者打印错误消息.
+如果广播成功启动,则生成`ESP_GAP_BLE_ADV_START_COMPLETE_EVT`事件,在该示例中,该事件被用于检查广播状态是否确实广播或者打印错误消息.
 
 ```
 …
