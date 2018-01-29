@@ -203,11 +203,11 @@ esp_ble_gatts_app_register(PROFILE_B_APP_ID);
 
 ## Setting GAP Parameters
 
-注册应用程序事件是程序生命周期中第一个触发事件,本例使用Profile A GATT事件句柄来配置注册时的广播参数.此示例可以选择使用标准的蓝牙核心规格广播参数或定制的原始缓冲区.该选项可以通过 `CONFIG_SET_RAW_ADV_DATA` 定义来选择.原始的广播数据可以用来实现iBeacons,Eddystone或其他专属,以及用于室内定位服务的定制框架类型,这些定制框架类型与标准规格不同.
+FIXME:注册应用程序事件是程序生命周期中第一个触发事件,本例使用Profile A GATT事件句柄来配置注册时的广播参数.此示例可以选择使用标准的蓝牙核心规格广播参数或定制的原始缓冲区.该选项可以通过 `CONFIG_SET_RAW_ADV_DATA` 定义来选择.原始的广播数据可以用来实现iBeacons,Eddystone或其他专属,以及用于室内定位服务的定制框架类型,这些定制框架类型与标准规格不同.
 
-用于配置标准蓝牙规范通告参数的函数是`esp_ble_gap_config_adv_data()`,它指向一个`esp_ble_adv_data_t`结构.用于广播数据的`esp_ble_adv_data_t`数据结构具有以下定义:
+`esp_ble_gap_config_adv_data()` 用于配置标准蓝牙规范广播参数,它的参数是指向 `esp_ble_adv_data_t` 结构的指针.用于广播数据的 `esp_ble_adv_data_t` 定义如下:
 
-```c
+```cFIXME:
 typedef struct {
     bool set_scan_rsp;            /*!< Set this advertising data as scan response or not*/
     bool include_name;            /*!< Advertising data include device name or not */
@@ -243,9 +243,9 @@ static esp_ble_adv_data_t adv_data = {
     .flag = (ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT),
 };
 ```
-最小广播间隔和最大广播间隔设置为1.25毫秒的倍数.在本例中,最小广播时间间隔定义为0x20 * 1.25 ms \x3d 40 ms,最大广播时间间隔初始化为0x40 * 1.25 ms \x3d 80 ms.
+最小广播间隔和最大广播间隔设置为1.25毫秒的倍数.在本例中,最小广播时间间隔定义为0x20 * 1.25 ms = 40 ms,最大广播时间间隔初始化为0x40 * 1.25 ms = 80 ms.
 
-广播有效载荷可以达到31个字节的数据.参数数据可能超过31个字节的广播数据包限制,导致堆栈切断广播数据包,并留下一些参数.在这个例子中,如果制造商的长度和数据都没有注释,这个行为可以被证明,这使得服务在重新编译和测试之后不被公布.
+FIXME:广播有效载荷可以达到31个字节的数据.参数数据可能超过31个字节的广播数据包限制,这将导致堆栈切断广播数据包,并留下一些参数.在这个例子中,如果制造商的长度和数据都没有注释,这个行为可以被证明,这使得服务在重新编译和测试之后不被公布.
 
 也可以使用`esp_ble_gap_config_adv_data_raw()`来公布自定义的原始数据
 和`esp_ble_gap_config_scan_rsp_data_raw()`函数,这些函数需要为广播数据和扫描响应数据创建并传递一个缓冲区.在本例中,原始数据由`raw_adv_data []`和`raw_scan_rsp_data []`数组表示.
