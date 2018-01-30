@@ -444,7 +444,7 @@ break;
 这些句柄是:
 
 1. Service handle 服务句柄
-2. Characteristic handle 特色手柄
+2. Characteristic handle 特征值句柄
 3. Characteristic value handle 特征值处理
 4. Characteristic descriptor handle 特征描述符句柄
 
@@ -498,12 +498,12 @@ case ESP_GATTS_CREATE_EVT:
 
 首先,由BLE堆栈生成的服务句柄存储在简档表中,稍后由应用层用来引用该服务.然后,设置特征的UUID和它的UUID长度.特征UUID的长度也是16位.该服务使用先前生成的服务句柄的`esp_ble_gatts_start_service()`函数启动.触发用于打印信息的`ESP_GATTS_START_EVT`事件.该特性通过`esp_ble_gatts_start_service()`函数与特性权限和属性一起被添加到服务中.在这个例子中,两个配置文件中的特征设置如下:
 
-权限:
+Permissions 权限:
 
 * `ESP_GATT_PERM_READ`:允许读取特征值
 * `ESP_GATT_PERM_WRITE`:允许写入特征值
 
-属性:
+Properties 属性:
 
 * `ESP_GATT_CHAR_PROP_BIT_READ`:可以读取特征
 * `ESP_GATT_CHAR_PROP_BIT_WRITE`:可以写入特征
@@ -664,7 +664,7 @@ case ESP_GATTS_CONNECT_EVT:
 * `bool is_long;　　　　　　　　/*!< The value is too long or not */`
 * `bool need_rsp;　　　　　　　/*!< The read operation need to do response */`
 
-在这个例子中,使用哑数据构造响应,并使用事件给定的相同句柄将其发送回主机.除了响应之外,GATT接口,连接ID和传输ID也作为参数包含在`esp_ble_gatts_send_response()`函数中.如果在创建特征或描述符时将自动响应字节设置为NULL,则此函数是必需的.
+在这个例子中,使用虚拟数据构造响应,并使用事件给定的相同句柄将其发送回主机.除了响应之外,GATT接口,连接ID和传输ID也作为参数包含在`esp_ble_gatts_send_response()`函数中.如果在创建特征或描述符时将自动响应字节设置为NULL,则此函数是必需的.
 
 ```c
 case ESP_GATTS_READ_EVT: {
@@ -806,7 +806,7 @@ void example_write_event_env(esp_gatt_if_t gatts_if, prepare_type_env_t *prepare
 } 
 ```
 
-当客户端发送写请求或准备写请求时,服务器应该响应.但是,如果客户端发送“无响应写入”命令,则服务器不需要回复响应.通过检查write.need_rsp参数的值来检查写入过程.如果需要应答,程序继续进行应答准备,如果不存在,则客户不需要应答,因此程序结束.
+当客户端发送写请求或准备写请求时,服务器应该响应.但是,如果客户端发送“无响应写入”命令,则服务器不需要回复响应.通过检查`write.need_rsp`参数的值来检查写入过程.如果需要应答,程序继续进行应答准备,如果不存在,则客户不需要应答,因此程序结束.
 
 ```c
 void example_write_event_env(esp_gatt_if_t gatts_if, prepare_type_env_t *prepare_write_env,  
