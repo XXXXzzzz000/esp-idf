@@ -6,9 +6,9 @@ import urllib
 import random
 import json
 import time
-from translate import Translator
+# from translate import Translator
 
-dir = r"D:\WorkSpace\python-project\translate"
+dir = r"D:\DevKit\msys32\home\xuanze\esp\esp-idf\tools\xuanze_translate"
 # 1.获取当前目录下md文件
 SRC = []
 DST = []
