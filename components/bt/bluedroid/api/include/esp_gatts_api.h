@@ -371,12 +371,12 @@ esp_err_t esp_ble_gatts_add_included_service(uint16_t service_handle, uint16_t i
  * @brief           This function is called to add a characteristic into a service.
  *
  * @param[in]       service_handle: service handle to which this included service is to
- *                  be added.
- * @param[in]       char_uuid : Characteristic UUID.
- * @param[in]       perm      : Characteristic value declaration attribute permission.
- * @param[in]       property  : Characteristic Properties
- * @param[in]       char_val    : Characteristic value 
- * @param[in]       control : attribute response control byte
+ *                  be added.(要添加特征的服务句柄)
+ * @param[in]       char_uuid : Characteristic UUID.(特征uuid)
+ * @param[in]       perm      : Characteristic value declaration attribute permission.(特征值声明属性权限)
+ * @param[in]       property  : Characteristic Properties(特征的属性)
+ * @param[in]       char_val    : Characteristic value (特征值)
+ * @param[in]       control : attribute response control byte(属性响应控制:手动/自动)
  *
  * @return
  *                  - ESP_OK : success
@@ -394,11 +394,11 @@ esp_err_t esp_ble_gatts_add_char(uint16_t service_handle,  esp_bt_uuid_t  *char_
  *                  to report the status and an ID number for this descriptor.
  *
  * @param[in]       service_handle: service handle to which this characteristic descriptor is to
- *                              be added.
- * @param[in]       perm: descriptor access permission.
- * @param[in]       descr_uuid: descriptor UUID.
- * @param[in]       char_descr_val  : Characteristic descriptor value 
- * @param[in]       control : attribute response control byte
+ *                              be added.(所添加特征描述的服务句柄)
+ * @param[in]       perm: descriptor access permission.(描述符的访问权限)
+ * @param[in]       descr_uuid: descriptor UUID.(描述符的uuid)
+ * @param[in]       char_descr_val  : Characteristic descriptor value (特征描述符的值)
+ * @param[in]       control : attribute response control byte(手动/自动响应)
  * @return
  *                  - ESP_OK : success
  *                  - other  : failed
