@@ -39,7 +39,7 @@
 static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 /* 服务a */
 #define GATTS_SERVICE_UUID_TEST_A 0x00FF//服务uuid
-#define GATTS_CHAR_UUID_TEST_A 0xFF01//特征值uuid
+#define GATTS_CHAR_UUID_TEST_A 0x1234//特征值uuid
 #define GATTS_DESCR_UUID_TEST_A 0x3333//描述符的uuid
 #define GATTS_NUM_HANDLE_TEST_A 4//number of handle requested for this service.(该服务申请的句柄数)
 
@@ -55,7 +55,7 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
 
 /* 特征1 在gatt a profile handle 中被添加 */
 esp_gatt_char_prop_t a_property = 0;//特征的权限(读写等)
-uint8_t char1_str[] = {0x11, 0x22, 0x33};//特征1的值
+uint8_t char1_str[] = {0xff, 0x00, 0xff};//特征1的值
 esp_attr_value_t gatts_demo_char1_val =
     {
         .attr_max_len = GATTS_DEMO_CHAR_VAL_LEN_MAX,
@@ -558,7 +558,7 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
         esp_err_t add_descr_ret = esp_ble_gatts_add_char_descr(gl_profile_tab[PROFILE_A_APP_ID].service_handle,
                                                                &gl_profile_tab[PROFILE_A_APP_ID].descr_uuid,
                                                                ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-                                                               NULL,
+                                                               "descriptor test",
                                                                NULL);
         if (add_descr_ret)
         {
@@ -635,7 +635,12 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
         break;
     }
 }
-/* gatt 事件回调 */
+/**
+ * @brief               gatt回调
+ * @param event         事件
+ * @param gatts_if      gatt接口值
+ * @param param         根据不同事件,具有不同的值
+ */
 static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param)
 {
     /* 注册事件,保存gatt 接口 */
@@ -725,12 +730,12 @@ void app_main()
         return;
     }
     /* 注册 gap 回调 */
-    // ret = esp_ble_gap_register_callback(gap_event_handler);
-    // if (ret)
-    // {
-    //     ESP_LOGE(GATTS_TAG, "gap register error, error code = %x", ret);
-    //     return;
-    // }
+    ret = esp_ble_gap_register_callback(gap_event_handler);
+    if (ret)
+    {
+        ESP_LOGE(GATTS_TAG, "gap register error, error code = %x", ret);
+        return;
+    }
     /* 注册 gatt app A */
     ret = esp_ble_gatts_app_register(PROFILE_A_APP_ID);
     if (ret)
