@@ -320,9 +320,9 @@ esp_err_t esp_ble_gatts_app_unregister(esp_gatt_if_t gatts_if);
  *                  the callback function needs to be used when adding included
  *                  service and characteristics/descriptors into the service.
  *
- * @param[in]       gatts_if: GATT server access interface
- * @param[in]       service_id: service ID.
- * @param[in]       num_handle: number of handle requested for this service.
+ * @param[in]       gatts_if: GATT server access interface(gatt 接口)
+ * @param[in]       service_id: service ID.(服务id)
+ * @param[in]       num_handle: number of handle requested for this service.(该服务申请的句柄数)
  *
  * @return
  *                  - ESP_OK : success

@@ -221,18 +221,19 @@ typedef struct {
     esp_bd_addr_t           peer_addr;          /*!< Peer device bluetooth device address */
     esp_ble_addr_type_t     peer_addr_type;     /*!< Peer device bluetooth device address type */
     esp_ble_adv_channel_t   channel_map;        /*!< Advertising channel map */
-    esp_ble_adv_filter_t    adv_filter_policy;  /*!< Advertising filter policy */
+    esp_ble_adv_filter_t    adv_filter_policy;  /*!< Advertising filter(过滤) policy(方式) */
 } esp_ble_adv_params_t;
 
 /// Advertising data content, according to "Supplement to the Bluetooth Core Specification"
+/// 广播数据内容，根据“蓝牙核心规格补充”
 typedef struct {
-    bool                    set_scan_rsp;           /*!< Set this advertising data as scan response or not*/
+    bool                    set_scan_rsp;           /*!< Set this advertising data as scan response(响应) or not*/
     bool                    include_name;           /*!< Advertising data include device name or not */
     bool                    include_txpower;        /*!< Advertising data include TX power */
     int                     min_interval;           /*!< Advertising data show advertising min interval */
     int                     max_interval;           /*!< Advertising data show advertising max interval */
-    int                     appearance;             /*!< External appearance of device */
-    uint16_t                manufacturer_len;       /*!< Manufacturer data length */
+    int                     appearance;             /*!< External(外部的) appearance of device */
+    uint16_t                manufacturer_len;       /*!< Manufacturer(制造商) data length */
     uint8_t                 *p_manufacturer_data;   /*!< Manufacturer data point */
     uint16_t                service_data_len;       /*!< Service data length */
     uint8_t                 *p_service_data;        /*!< Service data point */

@@ -232,7 +232,7 @@ typedef enum {
 } esp_gatt_conn_reason_t;
 
 /**
- * @brief Gatt id, include uuid and instance id
+ * @brief Gatt id, include uuid and instance(实例) id
  */
 typedef struct {
     esp_bt_uuid_t   uuid;                   /*!< UUID */
@@ -240,8 +240,8 @@ typedef struct {
 } __attribute__((packed)) esp_gatt_id_t;
 
 /**
- * @brief Gatt service id, include id
- *        (uuid and instance id) and primary flag
+ * @brief Gatt  service(服务) id, include id
+ *        (uuid and instance(实例) id) and primary(主服务) flag
  */
 typedef struct {
     esp_gatt_id_t   id;                     /*!< Gatt id, include uuid and instance */
@@ -262,7 +262,7 @@ typedef enum {
 
 /* relate to BTA_GATT_PERM_xxx in bta_gatt_api.h */
 /**
- * @brief Attribute permissions
+ * @brief Attribute permissions(属性权限)
  */
 #define    ESP_GATT_PERM_READ                  (1 << 0)   /* bit 0 -  0x0001 */    /* relate to BTA_GATT_PERM_READ in bta_gatt_api.h */
 #define    ESP_GATT_PERM_READ_ENCRYPTED        (1 << 1)   /* bit 1 -  0x0002 */    /* relate to BTA_GATT_PERM_READ_ENCRYPTED in bta_gatt_api.h */
@@ -275,7 +275,7 @@ typedef enum {
 typedef uint16_t esp_gatt_perm_t;
 
 /* relate to BTA_GATT_CHAR_PROP_BIT_xxx in bta_gatt_api.h */
-/* definition of characteristic properties */
+/* definition of characteristic properties(固有特性的定义) */
 #define    ESP_GATT_CHAR_PROP_BIT_BROADCAST    (1 << 0)       /* 0x01 */    /* relate to BTA_GATT_CHAR_PROP_BIT_BROADCAST in bta_gatt_api.h */
 #define    ESP_GATT_CHAR_PROP_BIT_READ         (1 << 1)       /* 0x02 */    /* relate to BTA_GATT_CHAR_PROP_BIT_READ in bta_gatt_api.h */
 #define    ESP_GATT_CHAR_PROP_BIT_WRITE_NR     (1 << 2)       /* 0x04 */    /* relate to BTA_GATT_CHAR_PROP_BIT_WRITE_NR in bta_gatt_api.h */
@@ -330,7 +330,7 @@ typedef struct
 
 
 /**
-  * @brief set the attribute value type
+  * @brief set the attribute(属性) value type
   */
 typedef struct
 {
