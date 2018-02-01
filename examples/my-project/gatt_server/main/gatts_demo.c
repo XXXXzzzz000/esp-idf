@@ -271,16 +271,34 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
     }
 }
 
+//    /**
+//     * @brief ESP_GATTS_WRITE_EVT
+//     */
+//    struct gatts_write_evt_param {
+//        uint16_t conn_id;               /*!< Connection id */
+//        uint32_t trans_id;              /*!< Transfer id */
+//        esp_bd_addr_t bda;              /*!< The bluetooth device address which been written */
+//        uint16_t handle;                /*!< The attribute handle */
+//        uint16_t offset;                /*!< Offset of the value, if the value is too long */
+//        bool need_rsp;                  /*!< The write operation need to do response */
+//        bool is_prep;                   /*!< This write operation is prepare write */
+//        uint16_t len;                   /*!< The write attribute value length */
+//        uint8_t *value;                 /*!< The write attribute value */
+//    } write;                            /*!< Gatt server callback param of ESP_GATTS_WRITE_EVT */
 /* 写入事件(写入长数据) */
 void example_write_event_env(esp_gatt_if_t gatts_if, prepare_type_env_t *prepare_write_env, esp_ble_gatts_cb_param_t *param)
 {
     esp_gatt_status_t status = ESP_GATT_OK;
+    /* 写操作需要响应*/
     if (param->write.need_rsp)
     {
+        /* 写操作准备写 */
         if (param->write.is_prep)
         {
+            /* 写入的buf 为空 */
             if (prepare_write_env->prepare_buf == NULL)
             {
+                /* 申请空间 */
                 prepare_write_env->prepare_buf = (uint8_t *)malloc(PREPARE_BUF_MAX_SIZE * sizeof(uint8_t));
                 prepare_write_env->prepare_len = 0;
                 if (prepare_write_env->prepare_buf == NULL)
@@ -289,39 +307,47 @@ void example_write_event_env(esp_gatt_if_t gatts_if, prepare_type_env_t *prepare
                     status = ESP_GATT_NO_RESOURCES;
                 }
             }
+            /* 写入的buf不为空 */
             else
             {
+                /* 写入的偏移量超过最大存储长度(此处为1024) */
                 if (param->write.offset > PREPARE_BUF_MAX_SIZE)
                 {
                     status = ESP_GATT_INVALID_OFFSET;
                 }
+                /* 写入后偏移量超过最大长度 */
                 else if ((param->write.offset + param->write.len) > PREPARE_BUF_MAX_SIZE)
                 {
                     status = ESP_GATT_INVALID_ATTR_LEN;
                 }
             }
-
+            /* 申请临时空间存放要写入的属性 */
             esp_gatt_rsp_t *gatt_rsp = (esp_gatt_rsp_t *)malloc(sizeof(esp_gatt_rsp_t));
+            /* 保存临时值 */
             gatt_rsp->attr_value.len = param->write.len;
             gatt_rsp->attr_value.handle = param->write.handle;
             gatt_rsp->attr_value.offset = param->write.offset;
             gatt_rsp->attr_value.auth_req = ESP_GATT_AUTH_REQ_NONE;
             memcpy(gatt_rsp->attr_value.value, param->write.value, param->write.len);
+            /* 发送响应 */
             esp_err_t response_err = esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, status, gatt_rsp);
             if (response_err != ESP_OK)
             {
                 ESP_LOGE(GATTS_TAG, "Send response error\n");
             }
+            /* 释放临时空间 */
             free(gatt_rsp);
             if (status != ESP_GATT_OK)
             {
                 return;
             }
+            /* 保存值 */
             memcpy(prepare_write_env->prepare_buf + param->write.offset,
                    param->write.value,
                    param->write.len);
             prepare_write_env->prepare_len += param->write.len;
         }
+        /* 没有准备写 响应 */
         else
         {
             esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, status, NULL);
