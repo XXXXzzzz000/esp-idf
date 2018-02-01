@@ -365,7 +365,7 @@ typedef struct {
     uint16_t          handle;                               /*!< Gatt attribute handle */
     uint16_t          offset;                               /*!< Gatt attribute value offset */
     uint16_t          len;                                  /*!< Gatt attribute value length */
-    uint8_t           auth_req;                             /*!< Gatt authentication request */
+    uint8_t           auth_req;                             /*!< Gatt authentication(认证) request */
 } esp_gatt_value_t;
 
 /// GATT remote read request response type
