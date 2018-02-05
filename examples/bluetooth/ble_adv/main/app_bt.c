@@ -32,8 +32,8 @@ static const char *tag = "BLE_ADV";
 #define HCIC_PARAM_SIZE_BLE_WRITE_ADV_PARAMS (15)
 #define HCIC_PARAM_SIZE_BLE_WRITE_ADV_DATA (31)
 
-#define BD_ADDR_LEN (6)                 /* Device address length */
-typedef uint8_t bd_addr_t[BD_ADDR_LEN]; /* Device address */
+#define BD_ADDR_LEN (6)                 /* 设备地址长度 */
+typedef uint8_t bd_addr_t[BD_ADDR_LEN]; /* 设备地址 */
 
 #define UINT16_TO_STREAM(p, u16)        \
     {                                   \
