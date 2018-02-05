@@ -6,3 +6,4 @@
 PROJECT_NAME := uart_async_rxtxtasks
 
 include $(IDF_PATH)/make/project.mk
+
