@@ -1,0 +1,29 @@
+gatt 读取属性列表
+Primary Service
+        /org/bluez/hci0/dev_30_AE_A4_45_39_8A/service0001
+        00001801-0000-1000-8000-00805f9b34fb
+        Generic Attribute Profile
+Characteristic
+        /org/bluez/hci0/dev_30_AE_A4_45_39_8A/service0001/char0002
+        00002a05-0000-1000-8000-00805f9b34fb
+        Service Changed
+Primary Service
+        /org/bluez/hci0/dev_30_AE_A4_45_39_8A/service0028
+        000000ff-0000-1000-8000-00805f9b34fb
+        Unknown
+Characteristic
+        /org/bluez/hci0/dev_30_AE_A4_45_39_8A/service0028/char0029
+        0000ff01-0000-1000-8000-00805f9b34fb
+        Unknown
+Descriptor
+        /org/bluez/hci0/dev_30_AE_A4_45_39_8A/service0028/char0029/desc002b
+        00002902-0000-1000-8000-00805f9b34fb
+        Client Characteristic Configuration
+Characteristic
+        /org/bluez/hci0/dev_30_AE_A4_45_39_8A/service0028/char002c
+        0000ff02-0000-1000-8000-00805f9b34fb
+        Unknown
+Characteristic
+        /org/bluez/hci0/dev_30_AE_A4_45_39_8A/service0028/char002e
+        0000ff03-0000-1000-8000-00805f9b34fb
+        Unknown
