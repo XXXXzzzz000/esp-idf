@@ -1,5 +1,7 @@
 {
   "files.associations": {
-    "uart.h": "c"
+    "uart.h": "c",
+    "freertos.h": "c",
+    "sdkconfig.h": "c"
   }
 }

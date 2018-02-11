@@ -24,31 +24,41 @@
 #include "esp_system.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
-#include "esp_bt.h"
+#include "sdkconfig.h"
 
+#include "esp_bt.h"
 #include "esp_gap_ble_api.h"
 #include "esp_gatts_api.h"
 #include "esp_bt_defs.h"
 #include "esp_bt_main.h"
 #include "esp_gatt_common_api.h"
 
-#include "sdkconfig.h"
+#include "driver/uart.h"
+#include "soc/uart_struct.h"
+#include "string.h"
 
 #define GATTS_TAG "GATTS_DEMO"
 #define MY_GATT_TAG "GATT"
 ///Declare the static function
 static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
-/* 服务a */
-#define GATTS_SERVICE_UUID_TEST_A 0x00FF//服务uuid
-#define GATTS_CHAR_UUID_TEST_A 0x1234//特征值uuid
-#define GATTS_DESCR_UUID_TEST_A 0x4321//描述符的uuid
-#define GATTS_NUM_HANDLE_TEST_A 4//number of handle requested for this service.(该服务申请的句柄数)
+//uart
+static const int RX_BUF_SIZE = 1024;
 
-uint8_t  desc_attr_val[]={0x11,0x11,0x11,0x11};
-esp_attr_value_t my_descr_value={
-. attr_max_len= 20,
-.attr_len=sizeof(desc_attr_val),
-.attr_value= desc_attr_val,
+#define TXD_PIN (GPIO_NUM_4)
+#define RXD_PIN (GPIO_NUM_5)
+int sendData(const char *logName, const char *data);
+
+/* 服务a */
+#define GATTS_SERVICE_UUID_TEST_A 0x00FF //服务uuid
+#define GATTS_CHAR_UUID_TEST_A 0x1234    //特征值uuid
+#define GATTS_DESCR_UUID_TEST_A 0x4321   //描述符的uuid
+#define GATTS_NUM_HANDLE_TEST_A 4        //number of handle requested for this service.(该服务申请的句柄数)
+
+uint8_t desc_attr_val[] = {0x11, 0x11, 0x11, 0x11};
+esp_attr_value_t my_descr_value = {
+    .attr_max_len = 20,
+    .attr_len = sizeof(desc_attr_val),
+    .attr_value = desc_attr_val,
 };
 /* 特征值的最大长度 */
 #define GATTS_DEMO_CHAR_VAL_LEN_MAX 0x40
@@ -61,8 +71,8 @@ esp_attr_value_t my_descr_value={
 #define PREPARE_BUF_MAX_SIZE 1024
 
 /* 特征1 在gatt a profile handle 中被添加 */
-esp_gatt_char_prop_t a_property = 0;//特征的权限(读写等)
-uint8_t char1_str[] = {0xff, 0x00, 0xff};//特征1的值
+esp_gatt_char_prop_t a_property = 0;      //特征的权限(读写等)
+uint8_t char1_str[] = {0xff, 0x00, 0xff}; //特征1的值
 esp_attr_value_t gatts_demo_char1_val =
     {
         .attr_max_len = GATTS_DEMO_CHAR_VAL_LEN_MAX,
@@ -161,14 +171,14 @@ static esp_ble_adv_data_t scan_rsp_data = {
 
 /* 广播参数设置 */
 static esp_ble_adv_params_t adv_params = {
-    .adv_int_min = 0x20,//广播最小间隔
-    .adv_int_max = 0x40,//广播最大间隔
-    .adv_type = ADV_TYPE_IND,//广播类型TODO:这几个广播类型是什么意思
-    .own_addr_type = BLE_ADDR_TYPE_PUBLIC,//蓝牙设备地址类型
+    .adv_int_min = 0x20,                   //广播最小间隔
+    .adv_int_max = 0x40,                   //广播最大间隔
+    .adv_type = ADV_TYPE_IND,              //广播类型TODO:这几个广播类型是什么意思
+    .own_addr_type = BLE_ADDR_TYPE_PUBLIC, //蓝牙设备地址类型
     //.peer_addr            =
     //.peer_addr_type       =
-    .channel_map = ADV_CHNL_ALL,//在哪个通道上广播:37,38,39,all
-    .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,//允许所有设备扫描和连接
+    .channel_map = ADV_CHNL_ALL,                            //在哪个通道上广播:37,38,39,all
+    .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY, //允许所有设备扫描和连接
 };
 
 #define PROFILE_NUM 1
@@ -184,11 +194,11 @@ struct gatts_profile_inst
     esp_gatt_srvc_id_t service_id; /* 服务id */
     uint16_t char_handle;          /* 特征句柄 */
 
-    esp_bt_uuid_t char_uuid; /* 特征id  */
-    esp_gatt_perm_t perm;/* 属性权限 */
-    esp_gatt_char_prop_t property;/* 固有特性的定义 */
-    uint16_t descr_handle;/* 描述符句柄 */
-    esp_bt_uuid_t descr_uuid;/* 描述符 uuid */
+    esp_bt_uuid_t char_uuid;       /* 特征id  */
+    esp_gatt_perm_t perm;          /* 属性权限 */
+    esp_gatt_char_prop_t property; /* 固有特性的定义 */
+    uint16_t descr_handle;         /* 描述符句柄 */
+    esp_bt_uuid_t descr_uuid;      /* 描述符 uuid */
 };
 
 /* One gatt-based profile one app_id and one gatts_if, this array will store the gatts_if returned by ESP_GATTS_REG_EVT */
@@ -212,10 +222,10 @@ void example_exec_write_event_env(prepare_type_env_t *prepare_write_env, esp_ble
 /* gap 事件句柄 */
 static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
 {
-    ESP_LOGE(MY_GATT_TAG, "gap event %d\n",event);
+    ESP_LOGE(MY_GATT_TAG, "gap event %d\n", event);
     switch (event)
     {
-        /* 配置广播数据和扫描数据 */
+    /* 配置广播数据和扫描数据 */
 #ifdef CONFIG_SET_RAW_ADV_DATA
     case ESP_GAP_BLE_ADV_DATA_RAW_SET_COMPLETE_EVT:
         adv_config_done &= (~adv_config_flag);
@@ -387,8 +397,8 @@ void example_exec_write_event_env(prepare_type_env_t *prepare_write_env, esp_ble
 /* profile a 句柄 */
 static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param)
 {
-    ESP_LOGE(MY_GATT_TAG, "gatt event %d\n",event);
-    
+    ESP_LOGE(MY_GATT_TAG, "gatt event %d\n", event);
+
     switch (event)
     {
     /*!< 注册app id */
@@ -465,6 +475,8 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
     case ESP_GATTS_WRITE_EVT:
     {
         ESP_LOGI(MY_GATT_TAG, "GATT_WRITE_EVT, conn_id %d, trans_id %d, handle %d", param->write.conn_id, param->write.trans_id, param->write.handle);
+        sendData((const char *)"SendUartData", (const char *)"char changeed");
+
         /* 没有准备写 */
         if (!param->write.is_prep)
         {
@@ -590,7 +602,7 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
         {
             ESP_LOGI(MY_GATT_TAG, "prf_char[%x] =%x\n", i, prf_char[i]);
         }
-        #if 0
+#if 0
         /* 添加特征描述符。 */
         esp_err_t add_descr_ret = esp_ble_gatts_add_char_descr(gl_profile_tab[PROFILE_A_APP_ID].service_handle,
                                                                &gl_profile_tab[PROFILE_A_APP_ID].descr_uuid,
@@ -602,7 +614,7 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
             ESP_LOGE(MY_GATT_TAG, "add char descr failed, error code =%x", add_descr_ret);
         }
         break;
-        #endif
+#endif
     }
     /*!< 添加描述符完成 */
     case ESP_GATTS_ADD_CHAR_DESCR_EVT:
@@ -714,11 +726,50 @@ static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_
         }
     } while (0);
 }
+void init()
+{
+    const uart_config_t uart_config = {
+        .baud_rate = 115200,
+        .data_bits = UART_DATA_8_BITS,
+        .parity = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE};
+    uart_param_config(UART_NUM_1, &uart_config);
+    uart_set_pin(UART_NUM_1, TXD_PIN, RXD_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+    // We won't use a buffer for sending data.
+    uart_driver_install(UART_NUM_1, RX_BUF_SIZE * 2, 0, 0, NULL, 0);
+}
+int sendData(const char *logName, const char *data)
+{
+    const int len = strlen(data);
+    const int txBytes = uart_write_bytes(UART_NUM_1, data, len);
+    ESP_LOGI(logName, "Wrote %d bytes", txBytes);
+    return txBytes;
+}
+
+static void rx_task()
+{
+    static const char *RX_TASK_TAG = "RX_TASK";
+    esp_log_level_set(RX_TASK_TAG, ESP_LOG_INFO);
+    uint8_t *data = (uint8_t *)malloc(RX_BUF_SIZE + 1);
+    while (1)
+    {
+        const int rxBytes = uart_read_bytes(UART_NUM_1, data, RX_BUF_SIZE, 1000 / portTICK_RATE_MS);
+        if (rxBytes > 0)
+        {
+            data[rxBytes] = 0;
+            ESP_LOGI(RX_TASK_TAG, "Read %d bytes: '%s'", rxBytes, data);
+            ESP_LOG_BUFFER_HEXDUMP(RX_TASK_TAG, data, rxBytes, ESP_LOG_INFO);
+        }
+    }
+    free(data);
+}
 
 void app_main()
 {
     esp_err_t ret;
-
+    init();
+    xTaskCreate(rx_task, "uart_rx_task", 1024 * 2, NULL, configMAX_PRIORITIES, NULL);
     /* 初始化 nvs */
     ret = nvs_flash_init();
     /* 没有多余的页就先清除然后再次初始化 */
