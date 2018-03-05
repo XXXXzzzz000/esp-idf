@@ -2,6 +2,19 @@
   "files.associations": {
     "uart.h": "c",
     "freertos.h": "c",
-    "sdkconfig.h": "c"
-  }
+    "sdkconfig.h": "c",
+    "esp_gatts_api.h": "c",
+    "esp_bt_main.h": "c",
+    "gatts_table_creat_demo.h": "c",
+    "esp_gatt_common_api.h": "c",
+    "reent.h": "c",
+    "esp_bt.h": "c",
+    "esp_task.h": "c",
+    "portable.h": "c",
+    "esp_system.h": "c",
+    "esp_sleep.h": "c",
+    "gpio.h": "c",
+    "esp_log.h": "c"
+  },
+  "C_Cpp.errorSquiggles": "Disabled"
 }
