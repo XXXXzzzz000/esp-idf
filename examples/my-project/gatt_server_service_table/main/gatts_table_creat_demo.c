@@ -134,14 +134,15 @@ static esp_ble_adv_data_t scan_rsp_data = {
 
 //广播参数
 static esp_ble_adv_params_t adv_params = {
-    .adv_int_min = 0x20,
-    .adv_int_max = 0x40,
-    .adv_type = ADV_TYPE_IND,
-    .own_addr_type = BLE_ADDR_TYPE_PUBLIC,
-    .channel_map = ADV_CHNL_ALL,
-    .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,
+    .adv_int_min = 0x20,//最小广播间隔
+    .adv_int_max = 0x40,//最大
+    .adv_type = ADV_TYPE_IND,//广播类型
+    .own_addr_type = BLE_ADDR_TYPE_PUBLIC,//地址类型
+    .channel_map = ADV_CHNL_ALL,//在哪个信道上广播
+    .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,//过滤策略
 };
 
+//gatt 规范实例类型
 struct gatts_profile_inst
 {
     esp_gatts_cb_t gatts_cb;
@@ -157,10 +158,11 @@ struct gatts_profile_inst
     uint16_t descr_handle;
     esp_bt_uuid_t descr_uuid;
 };
-
+//gatt规范事件处理程序声明
 static void gatts_profile_event_handler(esp_gatts_cb_event_t event,
                                         esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 
+//gatt 规范实例类型数组
 /* One gatt-based profile one app_id and one gatts_if, this array will store the gatts_if returned by ESP_GATTS_REG_EVT */
 static struct gatts_profile_inst heart_rate_profile_tab[PROFILE_NUM] = {
     [PROFILE_APP_IDX] = {
@@ -169,7 +171,7 @@ static struct gatts_profile_inst heart_rate_profile_tab[PROFILE_NUM] = {
     },
 };
 
-/* Service */
+/* 服务 */
 static const uint16_t GATTS_SERVICE_UUID_TEST = 0x00FF;
 static const uint16_t GATTS_CHAR_UUID_TEST_A = 0xFF01;
 static const uint16_t GATTS_CHAR_UUID_TEST_B = 0xFF02;
@@ -184,43 +186,44 @@ static const uint8_t char_prop_read_write_notify = ESP_GATT_CHAR_PROP_BIT_WRITE 
 static const uint8_t heart_measurement_ccc[2] = {0x00, 0x00};
 static const uint8_t char_value[4] = {0x11, 0x22, 0x33, 0x44};
 
-/* Full Database Description - Used to add attributes into the database */
+/* 完整数据库描述 - 用于将属性添加到数据库中 */
 static const esp_gatts_attr_db_t gatt_db[HRS_IDX_NB] =
     {
-        // Service Declaration
+        // 服务描述
         [IDX_SVC] =
             {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&primary_service_uuid, ESP_GATT_PERM_READ, sizeof(uint16_t), sizeof(GATTS_SERVICE_UUID_TEST), (uint8_t *)&GATTS_SERVICE_UUID_TEST}},
 
-        /* Characteristic Declaration */
+        /* A特性声明 */
         [IDX_CHAR_A] =
             {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ, CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read_write_notify}},
 
-        /* Characteristic Value */
+        /* A特性值 */
         [IDX_CHAR_VAL_A] =
             {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_TEST_A, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(char_value), (uint8_t *)char_value}},
 
-        /* Client Characteristic Configuration Descriptor */
+        /* A客户端特性配置描述符 */
         [IDX_CHAR_CFG_A] =
             {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_client_config_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, sizeof(uint16_t), sizeof(heart_measurement_ccc), (uint8_t *)heart_measurement_ccc}},
 
-        /* Characteristic Declaration */
+        /* B特性声明 */
         [IDX_CHAR_B] =
             {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ, CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_read}},
 
-        /* Characteristic Value */
+        /* B特性值 */
         [IDX_CHAR_VAL_B] =
             {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_TEST_B, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(char_value), (uint8_t *)char_value}},
 
-        /* Characteristic Declaration */
+        /* C特性声明 */
         [IDX_CHAR_C] =
             {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&character_declaration_uuid, ESP_GATT_PERM_READ, CHAR_DECLARATION_SIZE, CHAR_DECLARATION_SIZE, (uint8_t *)&char_prop_write}},
 
-        /* Characteristic Value */
+        /* C特性值 */
         [IDX_CHAR_VAL_C] =
             {{ESP_GATT_AUTO_RSP}, {ESP_UUID_LEN_16, (uint8_t *)&GATTS_CHAR_UUID_TEST_C, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE, GATTS_DEMO_CHAR_VAL_LEN_MAX, sizeof(char_value), (uint8_t *)char_value}},
 
 };
 
+//gap事件处理函数
 static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
 {
     switch (event)
@@ -290,7 +293,7 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
         break;
     }
 }
-
+//长数据准备写入
 void example_prepare_write_event_env(esp_gatt_if_t gatts_if, prepare_type_env_t *prepare_write_env, esp_ble_gatts_cb_param_t *param)
 {
     ESP_LOGI(GATTS_TABLE_TAG, "prepare write, handle = %d, value len = %d", param->write.handle, param->write.len);
@@ -348,7 +351,7 @@ void example_prepare_write_event_env(esp_gatt_if_t gatts_if, prepare_type_env_t 
            param->write.len);
     prepare_write_env->prepare_len += param->write.len;
 }
-
+//执行写入
 void example_exec_write_event_env(prepare_type_env_t *prepare_write_env, esp_ble_gatts_cb_param_t *param)
 {
     if (param->exec_write.exec_write_flag == ESP_GATT_PREP_WRITE_EXEC && prepare_write_env->prepare_buf)
@@ -366,7 +369,7 @@ void example_exec_write_event_env(prepare_type_env_t *prepare_write_env, esp_ble
     }
     prepare_write_env->prepare_len = 0;
 }
-
+//GATT事件处理函数
 static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param)
 {
     switch (event)
@@ -532,7 +535,7 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
         break;
     }
 }
-
+//gatt事件预处理
 static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param)
 {
 
