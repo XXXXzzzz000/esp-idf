@@ -229,6 +229,7 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
     switch (event)
     {
 #ifdef CONFIG_SET_RAW_ADV_DATA
+    //设置原始广播数据完成
     case ESP_GAP_BLE_ADV_DATA_RAW_SET_COMPLETE_EVT:
         adv_config_done &= (~ADV_CONFIG_FLAG);
         if (adv_config_done == 0)
@@ -236,6 +237,7 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
             esp_ble_gap_start_advertising(&adv_params);
         }
         break;
+    //设置原始扫描回复数据完成
     case ESP_GAP_BLE_SCAN_RSP_DATA_RAW_SET_COMPLETE_EVT:
         adv_config_done &= (~SCAN_RSP_CONFIG_FLAG);
         if (adv_config_done == 0)
@@ -259,6 +261,7 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
         }
         break;
 #endif
+    //开始广播完成
     case ESP_GAP_BLE_ADV_START_COMPLETE_EVT:
         /* advertising start complete event to indicate advertising start successfully or failed */
         if (param->adv_start_cmpl.status != ESP_BT_STATUS_SUCCESS)
@@ -270,6 +273,7 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
             ESP_LOGI(GATTS_TABLE_TAG, "advertising start successfully");
         }
         break;
+    //停止广播完成
     case ESP_GAP_BLE_ADV_STOP_COMPLETE_EVT:
         if (param->adv_stop_cmpl.status != ESP_BT_STATUS_SUCCESS)
         {
@@ -280,6 +284,7 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
             ESP_LOGI(GATTS_TABLE_TAG, "Stop adv successfully\n");
         }
         break;
+    //更新连接事件
     case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
         ESP_LOGI(GATTS_TABLE_TAG, "update connetion params status = %d, min_int = %d, max_int = %d,conn_int = %d,latency = %d, timeout = %d",
                  param->update_conn_params.status,
@@ -376,18 +381,21 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
     {
     case ESP_GATTS_REG_EVT:
     {
+        //设置广播名
         esp_err_t set_dev_name_ret = esp_ble_gap_set_device_name(SAMPLE_DEVICE_NAME);
         if (set_dev_name_ret)
         {
             ESP_LOGE(GATTS_TABLE_TAG, "set device name failed, error code = %x", set_dev_name_ret);
         }
 #ifdef CONFIG_SET_RAW_ADV_DATA
+        //设置原始广播数据
         esp_err_t raw_adv_ret = esp_ble_gap_config_adv_data_raw(raw_adv_data, sizeof(raw_adv_data));
         if (raw_adv_ret)
         {
             ESP_LOGE(GATTS_TABLE_TAG, "config raw adv data failed, error code = %x ", raw_adv_ret);
         }
         adv_config_done |= ADV_CONFIG_FLAG;
+        //设置扫描回应数据
         esp_err_t raw_scan_ret = esp_ble_gap_config_scan_rsp_data_raw(raw_scan_rsp_data, sizeof(raw_scan_rsp_data));
         if (raw_scan_ret)
         {
@@ -410,6 +418,7 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
         }
         adv_config_done |= SCAN_RSP_CONFIG_FLAG;
 #endif
+        //创建属性表
         esp_err_t create_attr_ret = esp_ble_gatts_create_attr_tab(gatt_db, gatts_if, HRS_IDX_NB, SVC_INST_ID);
         if (create_attr_ret)
         {
@@ -417,9 +426,11 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
         }
     }
     break;
+    //读事件
     case ESP_GATTS_READ_EVT:
         ESP_LOGI(GATTS_TABLE_TAG, "ESP_GATTS_READ_EVT");
         break;
+    //写事件
     case ESP_GATTS_WRITE_EVT:
         if (!param->write.is_prep)
         {
@@ -474,19 +485,24 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
             example_prepare_write_event_env(gatts_if, &prepare_write_env, param);
         }
         break;
+    //执行写事件
     case ESP_GATTS_EXEC_WRITE_EVT:
         ESP_LOGI(GATTS_TABLE_TAG, "ESP_GATTS_EXEC_WRITE_EVT");
         example_exec_write_event_env(&prepare_write_env, param);
         break;
+    //MTU事件?
     case ESP_GATTS_MTU_EVT:
         ESP_LOGI(GATTS_TABLE_TAG, "ESP_GATTS_MTU_EVT, MTU %d", param->mtu.mtu);
         break;
+    //GATT配置?
     case ESP_GATTS_CONF_EVT:
         ESP_LOGI(GATTS_TABLE_TAG, "ESP_GATTS_CONF_EVT, status = %d", param->conf.status);
         break;
+    //服务开始事件
     case ESP_GATTS_START_EVT:
         ESP_LOGI(GATTS_TABLE_TAG, "SERVICE_START_EVT, status %d, service_handle %d", param->start.status, param->start.service_handle);
         break;
+    //连接事件
     case ESP_GATTS_CONNECT_EVT:
         ESP_LOGI(GATTS_TABLE_TAG, "ESP_GATTS_CONNECT_EVT, conn_id = %d", param->connect.conn_id);
         esp_log_buffer_hex(GATTS_TABLE_TAG, param->connect.remote_bda, 6);
@@ -500,10 +516,12 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
         //start sent the update connection parameters to the peer device.
         esp_ble_gap_update_conn_params(&conn_params);
         break;
+    //断开事件
     case ESP_GATTS_DISCONNECT_EVT:
         ESP_LOGI(GATTS_TABLE_TAG, "ESP_GATTS_DISCONNECT_EVT, reason = %d", param->disconnect.reason);
         esp_ble_gap_start_advertising(&adv_params);
         break;
+    //创建属性表
     case ESP_GATTS_CREAT_ATTR_TAB_EVT:
     {
         if (param->add_attr_tab.status != ESP_GATT_OK)
@@ -523,6 +541,7 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
         }
         break;
     }
+    //其他事件
     case ESP_GATTS_STOP_EVT:
     case ESP_GATTS_OPEN_EVT:
     case ESP_GATTS_CANCEL_OPEN_EVT:
