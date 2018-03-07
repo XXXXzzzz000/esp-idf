@@ -58,7 +58,12 @@
                 "${workspaceRoot}/components/soc/esp32/include",
                 "${workspaceRoot}/components/heap/include",
                 "${workspaceRoot}/components/soc/include",
-                "${workspaceRoot}/components/driver/include"
+                "${workspaceRoot}/components/driver/include",
+                "${workspaceRoot}/components/vfs/include",
+                "${workspaceRoot}/components/fatfs/src",
+                "${workspaceRoot}/components/wear_levelling/include",
+                "${workspaceRoot}/components/spi_flash/include",
+                "${workspaceRoot}/components/spiffs/include"
             ],
             "defines": [
                 "_DEBUG",
