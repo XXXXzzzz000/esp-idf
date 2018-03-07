@@ -19,16 +19,17 @@ static const char *TAG = "example";
 void app_main(void)
 {
     ESP_LOGI(TAG, "Initializing SPIFFS");
-    
+    //spiffs配置
     esp_vfs_spiffs_conf_t conf = {
       .base_path = "/spiffs",
       .partition_label = NULL,
       .max_files = 5,
       .format_if_mount_failed = true
     };
-    
+
     // Use settings defined above to initialize and mount SPIFFS filesystem.
     // Note: esp_vfs_spiffs_register is an all-in-one convenience function.
+    //注册配置
     esp_err_t ret = esp_vfs_spiffs_register(&conf);
 
     if (ret != ESP_OK) {
@@ -41,8 +42,9 @@ void app_main(void)
         }
         return;
     }
-    
+
     size_t total = 0, used = 0;
+    //获取spiffs信息
     ret = esp_spiffs_info(NULL, &total, &used);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to get SPIFFS partition information");
@@ -53,12 +55,15 @@ void app_main(void)
     // Use POSIX and C standard library functions to work with files.
     // First create a file.
     ESP_LOGI(TAG, "Opening file");
+    //打开文件
     FILE* f = fopen("/spiffs/hello.txt", "w");
     if (f == NULL) {
         ESP_LOGE(TAG, "Failed to open file for writing");
         return;
     }
+    //写入信息
     fprintf(f, "Hello World!\n");
+    //关闭文件
     fclose(f);
     ESP_LOGI(TAG, "File written");
 
