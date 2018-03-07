@@ -25,6 +25,9 @@
    Return an error if anything goes wrong
    during this process.
  */
+/*
+首先读取并保存之前保存的号码，以此保存NVS中重新启动模块的次数。 如果在此过程中出现任何错误，请返回错误。
+ */
 esp_err_t save_restart_counter(void)
 {
     nvs_handle my_handle;
@@ -62,6 +65,8 @@ esp_err_t save_restart_counter(void)
    Return an error if anything goes wrong
    during this process.
  */
+/* 首先读取先前保存的值的表格，然后在表格的末尾添加新的值，
+从而将新的运行时间值保存在NVS中。 如果在此过程中出现任何错误，请返回错误。 */
 esp_err_t save_run_time(void)
 {
     nvs_handle my_handle;
@@ -105,6 +110,7 @@ esp_err_t save_run_time(void)
    Return an error if anything goes wrong
    during this process.
  */
+/* 从NVS读取并打印重新启动计数器和运行时间表。 如果在此过程中出现任何错误，请返回错误。 */
 esp_err_t print_what_saved(void)
 {
     nvs_handle my_handle;
@@ -164,8 +170,8 @@ void app_main()
     gpio_pad_select_gpio(GPIO_NUM_0);
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_DEF_INPUT);
 
-    /* Read the status of GPIO0. If GPIO0 is LOW for longer than 1000 ms,
-       then save module's run time and restart it
+    /* 读取 GPIO0状态.  GPIO0为低电平,并保持1000 ms以上,
+       则保存并重启
      */
     while (1) {
         if (gpio_get_level(GPIO_NUM_0) == 0) {

@@ -18,7 +18,7 @@
 
 void app_main()
 {
-    // Initialize NVS
+    // 初始化NVS
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES) {
         // NVS partition was truncated and needs to be erased
@@ -28,20 +28,23 @@ void app_main()
     }
     ESP_ERROR_CHECK( err );
 
-    // Open
+    // 打开
     printf("\n");
     printf("Opening Non-Volatile Storage (NVS) handle... ");
     nvs_handle my_handle;
+    /*打开函数*/
     err = nvs_open("storage", NVS_READWRITE, &my_handle);
     if (err != ESP_OK) {
         printf("Error (%d) opening NVS handle!\n", err);
     } else {
         printf("Done\n");
 
-        // Read
+        // 读取
         printf("Reading restart counter from NVS ... ");
         int32_t restart_counter = 0; // value will default to 0, if not set yet in NVS
+        /* 读取 */
         err = nvs_get_i32(my_handle, "restart_counter", &restart_counter);
+        /* 错误处理 */
         switch (err) {
             case ESP_OK:
                 printf("Done\n");
@@ -54,32 +57,35 @@ void app_main()
                 printf("Error (%d) reading!\n", err);
         }
 
-        // Write
+        // 写入
         printf("Updating restart counter in NVS ... ");
         restart_counter++;
+        /* 写入API */
         err = nvs_set_i32(my_handle, "restart_counter", restart_counter);
         printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
 
-        // Commit written value.
+        // 提交写入值
         // After setting any values, nvs_commit() must be called to ensure changes are written
         // to flash storage. Implementations may write to storage at other times,
         // but this is not guaranteed.
         printf("Committing updates in NVS ... ");
+        /* 提交API */
         err = nvs_commit(my_handle);
         printf((err != ESP_OK) ? "Failed!\n" : "Done\n");
 
-        // Close
+        /* 关闭API */
         nvs_close(my_handle);
     }
 
     printf("\n");
 
-    // Restart module
+    // 重启模块
     for (int i = 10; i >= 0; i--) {
         printf("Restarting in %d seconds...\n", i);
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
     printf("Restarting now.\n");
     fflush(stdout);
+    //重启
     esp_restart();
 }
