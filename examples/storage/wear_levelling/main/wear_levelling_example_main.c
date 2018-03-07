@@ -6,7 +6,7 @@
    CONDITIONS OF ANY KIND, either express or implied.
 
    This sample shows how to store files inside a FAT filesystem.
-   FAT filesystem is stored in a partition inside SPI flash, using the 
+   FAT filesystem is stored in a partition inside SPI flash, using the
    flash wear levelling library.
 */
 
@@ -31,45 +31,56 @@ void app_main(void)
     // To mount device we need name of device partition, define base_path
     // and allow format partition in case if it is new one and was not formated before
     const esp_vfs_fat_mount_config_t mount_config = {
-            .max_files = 4,
-            .format_if_mount_failed = true,
-            .allocation_unit_size = CONFIG_WL_SECTOR_SIZE
-    };
+        .max_files = 4,
+        .format_if_mount_failed = true,
+        .allocation_unit_size = CONFIG_WL_SECTOR_SIZE};
+    //挂载flash
     esp_err_t err = esp_vfs_fat_spiflash_mount(base_path, "storage", &mount_config, &s_wl_handle);
-    if (err != ESP_OK) {
+    if (err != ESP_OK)
+    {
         ESP_LOGE(TAG, "Failed to mount FATFS (0x%x)", err);
         return;
     }
     ESP_LOGI(TAG, "Opening file");
+    //打开file
     FILE *f = fopen("/spiflash/hello.txt", "wb");
-    if (f == NULL) {
+    if (f == NULL)
+    {
         ESP_LOGE(TAG, "Failed to open file for writing");
         return;
     }
+    //写入esp-idf版本
     fprintf(f, "written using ESP-IDF %s\n", esp_get_idf_version());
+    //关闭文件
     fclose(f);
     ESP_LOGI(TAG, "File written");
 
     // Open file for reading
     ESP_LOGI(TAG, "Reading file");
+    //读方式打开文件
     f = fopen("/spiflash/hello.txt", "rb");
-    if (f == NULL) {
+    if (f == NULL)
+    {
         ESP_LOGE(TAG, "Failed to open file for reading");
         return;
     }
     char line[128];
+    //读取内容
     fgets(line, sizeof(line), f);
+    //关闭文件
     fclose(f);
     // strip newline
     char *pos = strchr(line, '\n');
-    if (pos) {
+    if (pos)
+    {
         *pos = '\0';
     }
     ESP_LOGI(TAG, "Read from file: '%s'", line);
 
     // Unmount FATFS
     ESP_LOGI(TAG, "Unmounting FAT filesystem");
-    ESP_ERROR_CHECK( esp_vfs_fat_spiflash_unmount(base_path, s_wl_handle));
+    //卸载flash
+    ESP_ERROR_CHECK(esp_vfs_fat_spiflash_unmount(base_path, s_wl_handle));
 
     ESP_LOGI(TAG, "Done");
 }
