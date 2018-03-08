@@ -24,7 +24,10 @@
     "unistd.h": "c",
     "stat.h": "c",
     "nvs_flash.h": "c",
-    "wear_levelling.h": "c"
+    "wear_levelling.h": "c",
+    "esp_console.h": "c",
+    "esp_vfs_dev.h": "c",
+    "linenoise.h": "c"
   },
   "C_Cpp.errorSquiggles": "Disabled"
 }

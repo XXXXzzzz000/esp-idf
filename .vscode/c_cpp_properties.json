@@ -63,7 +63,8 @@
                 "${workspaceRoot}/components/fatfs/src",
                 "${workspaceRoot}/components/wear_levelling/include",
                 "${workspaceRoot}/components/spi_flash/include",
-                "${workspaceRoot}/components/spiffs/include"
+                "${workspaceRoot}/components/spiffs/include",
+                "${workspaceRoot}/components/console"
             ],
             "defines": [
                 "_DEBUG",
