@@ -22,7 +22,9 @@
     "esp_err.h": "c",
     "esp_spiffs.h": "c",
     "unistd.h": "c",
-    "stat.h": "c"
+    "stat.h": "c",
+    "nvs_flash.h": "c",
+    "wear_levelling.h": "c"
   },
   "C_Cpp.errorSquiggles": "Disabled"
 }
