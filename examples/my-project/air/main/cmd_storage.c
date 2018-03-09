@@ -27,6 +27,8 @@ static wl_handle_t s_wl_handle = WL_INVALID_HANDLE;
 // 挂载路径 partition
 const char *base_path = "/spiflash";
 
+
+/** commonds */
 static int cmd_storge_init()
 {
     const esp_vfs_fat_mount_config_t mount_config = {
@@ -45,7 +47,7 @@ static int cmd_storge_init()
 
 static int cmd_storge_read()
 {
-    //读方式打开文件
+    //打开文件
     FILE *f = fopen(AIR_LOG_PATH, "rb");
     if (f == NULL)
     {
@@ -69,6 +71,7 @@ static int cmd_storge_read()
 
 static int cmd_storge_write()
 {
+    //打开文件
     FILE *f = fopen(AIR_LOG_PATH, "wb");
     if (f == NULL)
     {
@@ -82,6 +85,7 @@ static int cmd_storge_write()
     ESP_LOGI(TAG, "File written");
     return 0;
 }
+
 static int cmd_storge_uninit()
 {
     //卸载flash
@@ -89,10 +93,7 @@ static int cmd_storge_uninit()
     return 0;
 }
 
-/**
- * 命令注册相关
- */
-
+/** commonds register*/
 void register_storge()
 {
     esp_console_cmd_t cmd_table[] =
