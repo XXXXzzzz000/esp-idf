@@ -131,46 +131,4 @@ void register_storge()
     }
 }
 
-#if 0
-static void cmd_storge_init_register()
-{
-    const esp_console_cmd_t cmd = {
-        .command = "storge_init",
-        .help = "Get the total size of heap memory available",
-        .hint = NULL,
-        .func = &cmd_storge_init,
-    };
-    ESP_ERROR_CHECK(esp_console_cmd_register(&cmd));
-}
-static void cmd_storge_read_register()
-{
-    const esp_console_cmd_t cmd = {
-        .command = "storge_read",
-        .help = "Get the total size of heap memory available",
-        .hint = NULL,
-        .func = &cmd_storge_read,
-    };
-    ESP_ERROR_CHECK(esp_console_cmd_register(&cmd));
-}
 
-static void cmd_storge_write_register()
-{
-    const esp_console_cmd_t cmd = {
-        .command = "storge_write",
-        .help = "Get the total size of heap memory available",
-        .hint = NULL,
-        .func = &cmd_storge_write,
-    };
-    ESP_ERROR_CHECK(esp_console_cmd_register(&cmd));
-}
-static void cmd_storge_uninit_register()
-{
-    const esp_console_cmd_t cmd = {
-        .command = "storge_uninit",
-        .help = "Get the total size of heap memory available",
-        .hint = NULL,
-        .func = &cmd_storge_uninit,
-    };
-    ESP_ERROR_CHECK(esp_console_cmd_register(&cmd));
-}
-#endif
