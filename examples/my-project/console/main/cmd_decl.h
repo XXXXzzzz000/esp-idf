@@ -7,9 +7,14 @@
    CONDITIONS OF ANY KIND, either express or implied.
 */
 #pragma once
-
+#define CMD_STORAGE
 // Register system functions
+#if defined(CMD_SYSTEM)
 void register_system();
+#endif // DEBUG
 
-// Register WiFi functions
-void register_wifi();
+#if defined(CMD_STORAGE)
+void register_storge();
+#endif // CMD_STORAGE
+
+

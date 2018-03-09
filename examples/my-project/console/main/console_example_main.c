@@ -117,7 +117,8 @@ void app_main()
 
     /* TODO:注册命令 */
     esp_console_register_help_command();
-    register_system();
+    // register_system();
+    register_storge();
     // register_wifi();
 
     /* 提示在每行之前打印。 这可以定制，动态等。
