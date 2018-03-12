@@ -36,7 +36,7 @@ void app_main(void)
 
     dac_output_enable( DAC_EXAMPLE_CHANNEL );
 
-    //be sure to do the init before using adc2. 
+    //请确保在使用adc2之前执行init。
     printf("adc2_init...\n");
     adc2_config_channel_atten( ADC2_EXAMPLE_CHANNEL, ADC_ATTEN_0db );
 
@@ -51,7 +51,7 @@ void app_main(void)
         } else if ( r == ESP_ERR_INVALID_STATE ) {
             printf("ADC2 not initialized yet.\n");
         } else if ( r == ESP_ERR_TIMEOUT ) {
-            //This can not happen in this example. But if WiFi is in use, such error code could be returned.
+            //在这个例子中不会发生这种情况。 但是，如果WiFi正在使用中，则可能会返回此类错误代码。
             printf("ADC2 is in use by Wi-Fi.\n");
         }
         vTaskDelay( 2 * portTICK_PERIOD_MS );
