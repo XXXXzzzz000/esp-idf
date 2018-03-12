@@ -17,19 +17,18 @@
 #include "esp_vfs_fat.h"
 #include "esp_system.h"
 #include "esp_console.h"
+#include "air_storge.h"
 
 #define AIR_LOG_PATH ("/spiflash/air_log.txt")
-
-static const char *TAG = "cmd_storge";
-// 损耗均衡库实例
-static wl_handle_t s_wl_handle = WL_INVALID_HANDLE;
-
 // 挂载路径 partition
 const char *base_path = "/spiflash";
 
+static const char *TAG = "air_storge";
+// 损耗均衡库实例
+static wl_handle_t s_wl_handle = WL_INVALID_HANDLE;
 
 /** commonds */
-static int cmd_storge_init()
+int cmd_storge_init()
 {
     const esp_vfs_fat_mount_config_t mount_config = {
         .max_files = 4,
@@ -45,7 +44,7 @@ static int cmd_storge_init()
     return 0;
 }
 
-static int cmd_storge_read()
+int cmd_storge_read()
 {
     //打开文件
     FILE *f = fopen(AIR_LOG_PATH, "rb");
@@ -55,38 +54,59 @@ static int cmd_storge_read()
         return -1;
     }
     char line[128];
-    //读取内容
-    fgets(line, sizeof(line), f);
+    while (!feof(f))
+    {
+        //读取内容
+        fgets(line, sizeof(line), f);
+        // strip newline
+        char *pos = strchr(line, '\n');
+        if (pos)
+        {
+            *pos = '\0';
+        }
+        ESP_LOGI(TAG, "Read from file: '%s'", line);
+    }
     //关闭文件
     fclose(f);
-    // strip newline
-    char *pos = strchr(line, '\n');
-    if (pos)
-    {
-        *pos = '\0';
-    }
-    ESP_LOGI(TAG, "Read from file: '%s'", line);
+
     return 0;
 }
 
-static int cmd_storge_write()
+int cmd_storge_write(uint32_t adc_reading, uint32_t voltage)
 {
     //打开文件
-    FILE *f = fopen(AIR_LOG_PATH, "wb");
+    FILE *f = fopen(AIR_LOG_PATH, "ab");
     if (f == NULL)
     {
         ESP_LOGE(TAG, "Failed to open file for writing");
         return -1;
     }
-    //写入esp-idf版本
-    fprintf(f, "written using ESP-IDF %s\n", esp_get_idf_version());
+    //写入adc数据 格式raw,voltage\n
+    fprintf(f, "%d,%d\n", adc_reading, voltage);
     //关闭文件
     fclose(f);
     ESP_LOGI(TAG, "File written");
     return 0;
 }
 
-static int cmd_storge_uninit()
+int cmd_storge_write_test()
+{
+    //打开文件
+    FILE *f = fopen(AIR_LOG_PATH, "ab");
+    if (f == NULL)
+    {
+        ESP_LOGE(TAG, "Failed to open file for writing");
+        return -1;
+    }
+    //写入adc数据 格式raw,voltage\n
+    fprintf(f, "%d,%d\n", 0, 1);
+    //关闭文件
+    fclose(f);
+    ESP_LOGI(TAG, "File written");
+    return 0;
+}
+
+int cmd_storge_uninit()
 {
     //卸载flash
     ESP_ERROR_CHECK(esp_vfs_fat_spiflash_unmount(base_path, s_wl_handle));
@@ -98,38 +118,43 @@ void register_storge()
 {
     esp_console_cmd_t cmd_table[] =
         {
+
+            {
+                .command = "storge_uninit",
+                .help = "",
+                .hint = NULL,
+                .func = &cmd_storge_uninit,
+            },
+            {
+                .command = "storge_write",
+                .help = "",
+                .hint = NULL,
+                .func = &cmd_storge_write_test,
+            },
             {
                 .command = "storge_init",
-                .help = "Get the total size of heap memory available",
+                .help = "",
                 .hint = NULL,
                 .func = &cmd_storge_init,
             },
             {
                 .command = "storge_read",
-                .help = "Get the total size of heap memory available",
+                .help = "",
                 .hint = NULL,
                 .func = &cmd_storge_read,
             },
             {
-                .command = "storge_write",
-                .help = "Get the total size of heap memory available",
-                .hint = NULL,
-                .func = &cmd_storge_write,
-            },
-            {
-                .command = "storge_uninit",
-                .help = "Get the total size of heap memory available",
-                .hint = NULL,
-                .func = &cmd_storge_uninit,
-            },
-            {NULL, NULL, NULL, NULL,NULL,}
+                NULL,
+                NULL,
+                NULL,
+                NULL,
+                NULL,
+            }
 
         };
 
-    for (esp_console_cmd_t *p = cmd_table; p->command!=NULL; p++)
+    for (esp_console_cmd_t *p = cmd_table; p->command != NULL; p++)
     {
         ESP_ERROR_CHECK(esp_console_cmd_register(p));
     }
 }
-
-

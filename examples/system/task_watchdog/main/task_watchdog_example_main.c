@@ -18,6 +18,7 @@
 /*
  * Macro to check the outputs of TWDT functions and trigger an abort if an
  * incorrect code is returned.
+ * 宏检查TWDT功能的输出，并在返回不正确的代码时触发中止。
  */
 #define CHECK_ERROR_CODE(returned, expected) ({                        \
             if(returned != expected){                                  \

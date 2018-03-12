@@ -27,7 +27,10 @@
     "wear_levelling.h": "c",
     "esp_console.h": "c",
     "esp_vfs_dev.h": "c",
-    "linenoise.h": "c"
+    "linenoise.h": "c",
+    "esp_adc_cal.h": "c",
+    "esp_timer.h": "c",
+    "air_storge.h": "c"
   },
   "C_Cpp.errorSquiggles": "Disabled"
 }

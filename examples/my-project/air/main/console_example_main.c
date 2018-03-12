@@ -20,6 +20,8 @@
 #include "esp_vfs_fat.h"
 #include "nvs.h"
 #include "nvs_flash.h"
+#include "air_adc.h"
+#include "air_storge.h"
 
 static const char *TAG = "example";
 
@@ -38,10 +40,10 @@ static void initialize_filesystem()
     const esp_vfs_fat_mount_config_t mount_config = {
         .max_files = 4,
         .format_if_mount_failed = true};
-    esp_err_t err =esp_vfs_fat_spiflash_mount(  MOUNT_PATH,
-                                                "storage",
-                                                &mount_config,
-                                                &wl_handle);
+    esp_err_t err = esp_vfs_fat_spiflash_mount(MOUNT_PATH,
+                                               "storage",
+                                               &mount_config,
+                                               &wl_handle);
     if (err != ESP_OK)
     {
         ESP_LOGE(TAG, "Failed to mount FATFS (0x%x)", err);
@@ -106,8 +108,7 @@ static void initialize_console()
     linenoiseHistoryLoad(HISTORY_PATH);
 #endif
 }
-
-void app_main()
+void console_task(void *parm)
 {
     initialize_nvs();
 #if CONFIG_STORE_HISTORY
@@ -117,9 +118,7 @@ void app_main()
 
     /* TODO:注册命令 */
     esp_console_register_help_command();
-    // register_system();
     register_storge();
-    // register_wifi();
 
     /* 提示在每行之前打印。 这可以定制，动态等。
      */
@@ -146,9 +145,7 @@ void app_main()
         prompt = "esp32> ";
 #endif //CONFIG_LOG_COLORS
     }
-
-    /* 主循环 */
-    while (true)
+    while (1)
     {
         /* 使用linenoise获得一条线。 当按下ENTER时，该行将被返回。
          */
@@ -185,5 +182,17 @@ void app_main()
         }
         /* linenoise allocates line buffer on the heap, so need to free it */
         linenoiseFree(line);
+        vTaskDelay(30);
     }
+}
+void app_main()
+{
+    //初始化存储
+    cmd_storge_init();
+
+    //adc 线程
+    xTaskCreate(air_adc_get_task, "air_adc_get_task", 4096, NULL, 2, NULL);
+
+    //console 线程
+    xTaskCreate(console_task, "console_task", 8192, NULL, 3, NULL);
 }
