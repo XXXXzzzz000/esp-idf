@@ -9,15 +9,19 @@
 #include "air_adc.h"
 #include "esp_log.h"
 #include "air_storge.h"
+#include "esp_timer.h"
 static const char *TAG = "AIR_ADC";
 
 #define DEFAULT_VREF 1100 //使用adc2_vref_to_gpio（）来获得更好的估计
 #define NO_OF_SAMPLES 64  //多重采样
 
 static esp_adc_cal_characteristics_t *adc_chars;
-static const adc_channel_t channel = ADC_CHANNEL_6; //GPIO34 if ADC1, GPIO14 if ADC2
+static const adc_channel_t channel = ADC_CHANNEL_6;  //GPIO34 if ADC1, GPIO14 if ADC2
+static const adc_channel_t channel2 = ADC_CHANNEL_5; //GPIO32 具体查看ESP32技术参考手册
 static const adc_atten_t atten = ADC_ATTEN_DB_11;
 static const adc_unit_t unit = ADC_UNIT_1;
+
+#if 0
 //检查adc的参考电压值
 static void check_efuse()
 {
@@ -41,6 +45,7 @@ static void check_efuse()
         ESP_LOGI(TAG, "eFuse Vref: NOT supported\n");
     }
 }
+#endif
 //打印adc检查值
 static void print_char_val_type(esp_adc_cal_value_t val_type)
 {
@@ -57,18 +62,20 @@ static void print_char_val_type(esp_adc_cal_value_t val_type)
         ESP_LOGI(TAG, "Characterized using Default Vref\n");
     }
 }
+
 //初始化adc
 static void air_adc_init()
 {
 
     //检查两点或Vref是否被烧入eFuse
-    check_efuse();
+    // check_efuse();
 
     //配置ADC
     if (unit == ADC_UNIT_1)
     {
         adc1_config_width(ADC_WIDTH_BIT_12);
         adc1_config_channel_atten(channel, atten);
+        adc1_config_channel_atten(channel2, atten);
     }
     else
     {
@@ -81,30 +88,34 @@ static void air_adc_init()
     esp_adc_cal_value_t val_type = esp_adc_cal_characterize(unit, atten, ADC_WIDTH_BIT_12, DEFAULT_VREF, adc_chars);
     print_char_val_type(val_type);
 }
+//获取自系统运行以来的秒数
+uint64_t get_time_s()
+{
+    return esp_timer_get_time() / 1000000;
+}
+//获取空气传感器的
 //读取adc值
 static uint32_t air_adc_get_voltage()
 {
     uint32_t adc_reading = 0;
-    //多重采样,求其均值
+    uint32_t adc_reading2 = 0;
+    //多重采样两个通道,求其均值
     for (int i = 0; i < NO_OF_SAMPLES; i++)
     {
-        if (unit == ADC_UNIT_1)
-        {
-            adc_reading += adc1_get_raw((adc1_channel_t)channel);
-        }
-        else
-        {
-            int raw;
-            adc2_get_raw((adc2_channel_t)channel, ADC_WIDTH_BIT_12, &raw);
-            adc_reading += raw;
-        }
+        adc_reading += adc1_get_raw((adc1_channel_t)channel);
+        adc_reading2 += adc1_get_raw((adc1_channel_t)channel2);
     }
     adc_reading /= NO_OF_SAMPLES;
+    adc_reading2 /= NO_OF_SAMPLES;
     //转换 adc_reading to voltage in mV
     uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
-    ESP_LOGI(TAG, "Raw: %d\tVoltage: %dmV\n", adc_reading, voltage);
+    uint32_t voltage2 = esp_adc_cal_raw_to_voltage(adc_reading2, adc_chars);
+    ESP_LOGI(TAG, "Raw: %d\tVoltage: %dmV\tTime:%lld\n", adc_reading, voltage, get_time_s());
+    ESP_LOGI(TAG, "Raw2: %d\tVoltage2: %dmV\tTime:%lld\n", adc_reading2, voltage2, get_time_s());
+
     //将读取的示数写入到文件内
-    cmd_storge_write(adc_reading, voltage);
+    cmd_storge_write(1, adc_reading, voltage, get_time_s());
+    cmd_storge_write(2, adc_reading2, voltage2, get_time_s());
     return voltage;
 }
 
@@ -118,5 +129,3 @@ void air_adc_get_task(void *parm)
         vTaskDelay(300);
     }
 }
-
-

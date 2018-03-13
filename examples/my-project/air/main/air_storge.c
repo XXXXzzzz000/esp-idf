@@ -20,6 +20,7 @@
 #include "air_storge.h"
 
 #define AIR_LOG_PATH ("/spiflash/air_log.txt")
+#define AIR_LOG_PATH2 ("/spiflash/air_log2.txt")
 // 挂载路径 partition
 const char *base_path = "/spiflash";
 
@@ -44,10 +45,30 @@ int cmd_storge_init()
     return 0;
 }
 
-int cmd_storge_read()
+int cmd_storge_read(int argc, char **argv)
 {
+    if (argc != 2)
+    {
+        ESP_LOGE(TAG, "argc error:argc=%d", argc);
+        return -1;
+    }
+
     //打开文件
-    FILE *f = fopen(AIR_LOG_PATH, "rb");
+    FILE *f = NULL;
+    int num = atoi(argv[1]);
+    if (num == 1)
+    {
+        f = fopen(AIR_LOG_PATH, "rb");
+    }
+    else if (num == 2)
+    {
+        f = fopen(AIR_LOG_PATH2, "rb");
+    }
+    else
+    {
+        ESP_LOGE(TAG, "argv error:argv=%s", *argv);
+    }
+
     if (f == NULL)
     {
         ESP_LOGE(TAG, "Failed to open file for reading");
@@ -72,17 +93,27 @@ int cmd_storge_read()
     return 0;
 }
 
-int cmd_storge_write(uint32_t adc_reading, uint32_t voltage)
+int cmd_storge_write(uint8_t file_num, uint32_t adc_reading, uint32_t voltage, uint64_t time)
 {
-    //打开文件
-    FILE *f = fopen(AIR_LOG_PATH, "ab");
+    FILE *f = NULL;
+    if (file_num == 1)
+    {
+        //打开文件
+        f = fopen(AIR_LOG_PATH, "ab");
+    }
+    else
+    {
+        //打开文件2
+        f = fopen(AIR_LOG_PATH2, "ab");
+    }
+    //错误判断
     if (f == NULL)
     {
         ESP_LOGE(TAG, "Failed to open file for writing");
         return -1;
     }
     //写入adc数据 格式raw,voltage\n
-    fprintf(f, "%d,%d\n", adc_reading, voltage);
+    fprintf(f, "%d,%d,%lld\n", adc_reading, voltage, time);
     //关闭文件
     fclose(f);
     ESP_LOGI(TAG, "File written");
@@ -110,6 +141,16 @@ int cmd_storge_uninit()
 {
     //卸载flash
     ESP_ERROR_CHECK(esp_vfs_fat_spiflash_unmount(base_path, s_wl_handle));
+    return 0;
+}
+int cmd_storge_clear()
+{
+
+    //清除flash
+    FILE *f = fopen(AIR_LOG_PATH, "wb");
+    fclose(f);
+    f = fopen(AIR_LOG_PATH2, "wb");
+    fclose(f);
     return 0;
 }
 
@@ -142,6 +183,12 @@ void register_storge()
                 .help = "",
                 .hint = NULL,
                 .func = &cmd_storge_read,
+            },
+            {
+                .command = "storge_clear",
+                .help = "",
+                .hint = NULL,
+                .func = &cmd_storge_clear,
             },
             {
                 NULL,
