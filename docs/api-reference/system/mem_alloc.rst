@@ -28,16 +28,16 @@ Special Uses
 DMA-Capable Memory
 ^^^^^^^^^^^^^^^^^^
 
-Use the MALLOC_CAP_DMA flag to allocate memory which is suitable for use with hardware DMA engines (for example SPI and I2S). This capability flag excludes any external PSRAM.
+Use the :cpp:type:`MALLOC_CAP_DMA` flag to allocate memory which is suitable for use with hardware DMA engines (for example SPI and I2S). This capability flag excludes any external PSRAM.
 
 32-Bit Accessible Memory
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 If a certain memory structure is only addressed in 32-bit units, for example an array of ints or pointers, it can be
-useful to allocate it with the MALLOC_CAP_32BIT flag. This also allows the allocator to give out IRAM memory; something
+useful to allocate it with the :cpp:type:`MALLOC_CAP_32BIT` flag. This also allows the allocator to give out IRAM memory, something
 which it can't do for a normal malloc() call. This can help to use all the available memory in the ESP32.
 
-Memory allocated with MALLOC_CAP_32BIT can *only* be accessed via 32-bit reads and writes, any other type of access will
+Memory allocated with :cpp:type:`MALLOC_CAP_32BIT` can *only* be accessed via 32-bit reads and writes, any other type of access will
 generate a fatal LoadStoreError exception.
 
 API Reference - Heap Allocation
