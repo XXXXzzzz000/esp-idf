@@ -107,12 +107,12 @@ static uint32_t air_adc_get_voltage()
 //转换 adc_reading to voltage in mV
     uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
     uint32_t voltage2 = esp_adc_cal_raw_to_voltage(adc_reading2, adc_chars);
-    ESP_LOGI(TAG, "Raw: %d\tVoltage: %dmV\tTime:%lld\n", adc_reading, voltage, get_time_s());
-    ESP_LOGI(TAG, "Raw2: %d\tVoltage2: %dmV\tTime:%lld\n", adc_reading2, voltage2, get_time_s());
+    ESP_LOGI(TAG, "Raw: %d\tVoltage: %dmV\tTime:%lld\n", adc_reading, voltage, adc_runtime);
+    ESP_LOGI(TAG, "Raw2: %d\tVoltage2: %dmV\tTime:%lld\n", adc_reading2, voltage2, adc_runtime);
 
 //将读取的示数写入到文件内
-    cmd_storge_write(1, adc_reading, voltage, get_time_s());
-    cmd_storge_write(2, adc_reading2, voltage2, get_time_s());
+    cmd_storge_write(1, adc_reading, voltage, adc_runtime);
+    cmd_storge_write(2, adc_reading2, voltage2, adc_runtime);
     return voltage;
 }
 
