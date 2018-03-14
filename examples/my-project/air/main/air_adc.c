@@ -14,7 +14,7 @@ static const char *TAG = "AIR_ADC";
 
 #define DEFAULT_VREF 1100 //使用adc2_vref_to_gpio（）来获得更好的估计
 #define NO_OF_SAMPLES 64  //多重采样
-#define TASK_PERIOD 3000 //30s
+#define TASK_PERIOD 3000 //任务周期30s
 xTaskHandle xAirAdcHandle = NULL;
 static esp_adc_cal_characteristics_t *adc_chars;
 static const adc_channel_t channel = ADC_CHANNEL_6;  //GPIO34 if ADC1, GPIO14 if ADC2
