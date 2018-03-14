@@ -30,7 +30,8 @@
     "linenoise.h": "c",
     "esp_adc_cal.h": "c",
     "esp_timer.h": "c",
-    "air_storge.h": "c"
+    "air_storge.h": "c",
+    "air_adc.h": "c"
   },
   "C_Cpp.errorSquiggles": "Disabled"
 }
