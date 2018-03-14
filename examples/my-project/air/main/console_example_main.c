@@ -119,6 +119,7 @@ void console_task(void *parm)
     /* TODO:注册命令 */
     esp_console_register_help_command();
     register_storge();
+    register_adc();
 
     /* 提示在每行之前打印。 这可以定制，动态等。
      */
@@ -191,7 +192,7 @@ void app_main()
     cmd_storge_init();
 
     //adc 线程
-    xTaskCreate(air_adc_get_task, "air_adc_get_task", 4096, NULL, 2, NULL);
+    xTaskCreate(air_adc_get_task, "air_adc_get_task", 4096, NULL, 2, &xAirAdcHandle);
 
     //console 线程
     xTaskCreate(console_task, "console_task", 8192, NULL, 3, NULL);
