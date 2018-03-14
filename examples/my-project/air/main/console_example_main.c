@@ -7,21 +7,8 @@
    CONDITIONS OF ANY KIND, either express or implied.
 */
 
-#include <stdio.h>
-#include <string.h>
-#include "esp_system.h"
-#include "esp_log.h"
-#include "esp_console.h"
-#include "esp_vfs_dev.h"
-#include "driver/uart.h"
-#include "linenoise/linenoise.h"
-#include "argtable3/argtable3.h"
-#include "cmd_decl.h"
-#include "esp_vfs_fat.h"
-#include "nvs.h"
-#include "nvs_flash.h"
-#include "air_adc.h"
-#include "air_storge.h"
+#include "my_esp32_header.h"
+
 
 static const char *TAG = "example";
 

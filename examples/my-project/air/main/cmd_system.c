@@ -6,21 +6,8 @@
    software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
    CONDITIONS OF ANY KIND, either express or implied.
 */
+#include "my_esp32_header.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include "esp_log.h"
-#include "esp_console.h"
-#include "esp_system.h"
-#include "esp_sleep.h"
-#include "driver/rtc_io.h"
-#include "argtable3/argtable3.h"
-#include "cmd_decl.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "soc/rtc_cntl_reg.h"
-#include "sdkconfig.h"
 
 #ifdef CONFIG_FREERTOS_USE_STATS_FORMATTING_FUNCTIONS
 #define WITH_TASKS_INFO 1
@@ -94,7 +81,7 @@ static int tasks_info(int argc, char** argv)
         ESP_LOGE(__func__, "failed to allocate buffer for vTaskList output");
         return 1;
     }
-    fputs("Task Name\tStatus\tPrio\tHWM\tTask Number\n", stdout);    
+    fputs("Task Name\tStatus\tPrio\tHWM\tTask Number\n", stdout);
     vTaskList(task_list_buffer);
     fputs(task_list_buffer, stdout);
     free(task_list_buffer);

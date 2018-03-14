@@ -10,14 +10,7 @@
    flash wear levelling library.
 */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include "esp_vfs.h"
-#include "esp_vfs_fat.h"
-#include "esp_system.h"
-#include "esp_console.h"
-#include "air_storge.h"
+#include "my_esp32_header.h"
 
 #define MQ_135_CALIBRATION ("/spiflash/mq_135_calibration.txt")
 #define MQ_136_CALIBRATION ("/spiflash/mq_136_calibration.txt")

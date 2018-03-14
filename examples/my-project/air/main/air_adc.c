@@ -1,15 +1,6 @@
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "driver/gpio.h"
-#include "driver/adc.h"
-#include "esp_adc_cal.h"
-#include "air_adc.h"
-#include "esp_log.h"
-#include "air_storge.h"
-#include "esp_timer.h"
+#include "my_esp32_header.h"
+
 static const char *TAG = "AIR_ADC";
 
 #define DEFAULT_VREF 1100 //使用adc2_vref_to_gpio（）来获得更好的估计
@@ -46,7 +37,7 @@ static void check_efuse()
         ESP_LOGI(TAG, "eFuse Vref: NOT supported\n");
     }
 }
-
+#endif
 //打印adc检查值
 static void print_char_val_type(esp_adc_cal_value_t val_type)
 {
@@ -63,7 +54,7 @@ static void print_char_val_type(esp_adc_cal_value_t val_type)
         ESP_LOGI(TAG, "Characterized using Default Vref\n");
     }
 }
-#endif
+
 
 //初始化adc
 static void air_adc_init()
@@ -81,9 +72,9 @@ static void air_adc_init()
 
 // ADC特性描述
     adc_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
-    //adc1 衰减ADC_ATTEN_DB_11 adc位宽12 参考电压DEFAULT_VREF adc特性指针
+    // adc1 衰减ADC_ATTEN_DB_11 adc位宽12 参考电压DEFAULT_VREF adc特性指针
     esp_adc_cal_value_t val_type = esp_adc_cal_characterize(unit, atten, ADC_WIDTH_BIT_12, DEFAULT_VREF, adc_chars);
-    // print_char_val_type(val_type);
+    print_char_val_type(val_type);
 }
 //获取自系统运行以来的秒数
 uint64_t get_time_s()
@@ -138,23 +129,25 @@ void air_adc_get_task(void *parm)
 }
 
 /* console 命令 */
-static void cmd_adc_suspend(int argc, char **argv)
+static int cmd_adc_suspend(int argc, char **argv)
 {
     if (xAirAdcHandle == NULL)
     {
         ESP_LOGE(TAG, "air task handler is null");
-        return;
+        return -1;
     }
     vTaskSuspend(xAirAdcHandle);
+    return 0;
 }
-static void cmd_adc_resume(int argc, char **argv)
+static int cmd_adc_resume(int argc, char **argv)
 {
     if (xAirAdcHandle == NULL)
     {
         ESP_LOGE(TAG, "air task handler is null");
-        return;
+        return -1;
     }
-    xTaskToResume(xAirAdcHandle);
+    vTaskResume(xAirAdcHandle);
+    return 0;
 }
 
 /** commonds register*/

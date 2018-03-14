@@ -31,7 +31,13 @@
     "esp_adc_cal.h": "c",
     "esp_timer.h": "c",
     "air_storge.h": "c",
-    "air_adc.h": "c"
+    "air_adc.h": "c",
+    "stdlib.h": "c",
+    "task.h": "c",
+    "my_esp32_header.h": "c",
+    "ctype.h": "c",
+    "argtable3.h": "c",
+    "cmd_decl.h": "c"
   },
   "C_Cpp.errorSquiggles": "Disabled"
 }
