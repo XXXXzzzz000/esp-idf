@@ -14,7 +14,7 @@ static const char *TAG = "AIR_ADC";
 
 #define DEFAULT_VREF 1100 //使用adc2_vref_to_gpio（）来获得更好的估计
 #define NO_OF_SAMPLES 64  //多重采样
-
+#define TASK_PERIOD 3000 //30s
 xTaskHandle xAirAdcHandle = NULL;
 static esp_adc_cal_characteristics_t *adc_chars;
 static const adc_channel_t channel = ADC_CHANNEL_6;  //GPIO34 if ADC1, GPIO14 if ADC2
@@ -111,6 +111,7 @@ static uint32_t air_adc_get_voltage()
     ESP_LOGI(TAG, "Raw2: %d\tVoltage2: %dmV\tTime:%lld\n", adc_reading2, voltage2, adc_runtime);
 
 //将读取的示数写入到文件内
+    //实际时间=adc_runtime*30s
     cmd_storge_write(1, adc_reading, voltage, adc_runtime);
     cmd_storge_write(2, adc_reading2, voltage2, adc_runtime);
     return voltage;
@@ -120,7 +121,7 @@ static uint32_t air_adc_get_voltage()
 void air_adc_get_task(void *parm)
 {
     static portTickType xLastWakeTime;
-    const portTickType xFrequency = 3000;
+    const portTickType xFrequency = TASK_PERIOD;
 
     // 使用当前时间初始化变量xLastWakeTime
     xLastWakeTime = xTaskGetTickCount();
