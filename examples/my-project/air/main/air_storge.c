@@ -19,8 +19,10 @@
 #include "esp_console.h"
 #include "air_storge.h"
 
-#define AIR_LOG_PATH ("/spiflash/air_log.txt")
-#define AIR_LOG_PATH2 ("/spiflash/air_log2.txt")
+#define MQ_135_CALIBRATION ("/spiflash/mq_135_calibration.txt")
+#define MQ_136_CALIBRATION ("/spiflash/mq_136_calibration.txt")
+// #define MQ_135_COLLECT ("/spiflash/mq_135_collect.txt")
+// #define MQ_136_COLLECT ("/spiflash/mq_136_collect.txt")
 // 挂载路径 partition
 const char *base_path = "/spiflash";
 
@@ -58,11 +60,11 @@ int cmd_storge_read(int argc, char **argv)
     int num = atoi(argv[1]);
     if (num == 1)
     {
-        f = fopen(AIR_LOG_PATH, "rb");
+        f = fopen(MQ_135_CALIBRATION, "rb");
     }
     else if (num == 2)
     {
-        f = fopen(AIR_LOG_PATH2, "rb");
+        f = fopen(MQ_136_CALIBRATION, "rb");
     }
     else
     {
@@ -93,20 +95,25 @@ int cmd_storge_read(int argc, char **argv)
     return 0;
 }
 
-int cmd_storge_write(uint8_t file_num, uint32_t adc_reading, uint32_t voltage, uint64_t time)
+int cmd_storge_write(air_sensor_t sensor_type, uint32_t adc_reading, uint32_t voltage, uint64_t time)
 {
     FILE *f = NULL;
-    if (file_num == 1)
+    //根据是否完成采集,传感器类型打开相应文件
+    if (sensor_type == MQ_135)
     {
-        //打开文件
-        f = fopen(AIR_LOG_PATH, "ab");
+
+        f = fopen(MQ_135_CALIBRATION, "ab");
+    }
+    else if (sensor_type == MQ_136)
+    {
+        //打开文件2
+        f = fopen(MQ_136_CALIBRATION, "ab");
     }
     else
     {
-        //打开文件2
-        f = fopen(AIR_LOG_PATH2, "ab");
+        ESP_LOGE(TAG, "error sensor type");
     }
-    //错误判断
+    //判断文件是否打开
     if (f == NULL)
     {
         ESP_LOGE(TAG, "Failed to open file for writing");
@@ -123,7 +130,7 @@ int cmd_storge_write(uint8_t file_num, uint32_t adc_reading, uint32_t voltage, u
 int cmd_storge_write_test()
 {
     //打开文件
-    FILE *f = fopen(AIR_LOG_PATH, "ab");
+    FILE *f = fopen(MQ_135_CALIBRATION, "ab");
     if (f == NULL)
     {
         ESP_LOGE(TAG, "Failed to open file for writing");
@@ -147,9 +154,9 @@ int cmd_storge_clear()
 {
 
     //清除flash
-    FILE *f = fopen(AIR_LOG_PATH, "wb");
+    FILE *f = fopen(MQ_135_CALIBRATION, "wb");
     fclose(f);
-    f = fopen(AIR_LOG_PATH2, "wb");
+    f = fopen(MQ_136_CALIBRATION, "wb");
     fclose(f);
     return 0;
 }
