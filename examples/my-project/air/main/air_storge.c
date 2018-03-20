@@ -12,8 +12,8 @@
 
 #include "my_esp32_header.h"
 
-#define MQ_135_CALIBRATION ("/spiflash/mq_135_calibration.txt")
-#define MQ_136_CALIBRATION ("/spiflash/mq_136_calibration.txt")
+#define MQ_135_CALIBRATION ("/spiflash/mq1351.txt")
+#define MQ_136_CALIBRATION ("/spiflash/mq1361.txt")
 // #define MQ_135_COLLECT ("/spiflash/mq_135_collect.txt")
 // #define MQ_136_COLLECT ("/spiflash/mq_136_collect.txt")
 // 挂载路径 partition
@@ -37,6 +37,7 @@ int cmd_storge_init()
         ESP_LOGE(TAG, "Failed to mount FATFS (0x%x)", err);
         return -1;
     }
+    ESP_LOGI(TAG, "mount FATFS ok");
     return 0;
 }
 
@@ -69,6 +70,7 @@ int cmd_storge_read(int argc, char **argv)
         ESP_LOGE(TAG, "Failed to open file for reading");
         return -1;
     }
+    fseek(f, 0, SEEK_SET);
     char line[128];
     while (!feof(f))
     {
@@ -116,7 +118,7 @@ int cmd_storge_write(air_sensor_t sensor_type, uint32_t adc_reading, uint32_t vo
     fprintf(f, "%d,%d,%lld\n", adc_reading, voltage, time);
     //关闭文件
     fclose(f);
-    ESP_LOGI(TAG, "File written");
+    // ESP_LOGI(TAG, "File written");
     return 0;
 }
 
