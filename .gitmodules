@@ -37,3 +37,6 @@
 [submodule "components/json/cJSON"]
 	path = components/json/cJSON
 	url = https://github.com/DaveGamble/cJSON.git
+[submodule "components/espmqtt"]
+	path = components/espmqtt
+	url = https://github.com/tuanpmt/espmqtt.git
