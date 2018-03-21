@@ -41,7 +41,11 @@
     "sockets.h": "c",
     "platform.h": "c",
     "dns.h": "c",
-    "esp_wifi.h": "c"
+    "esp_wifi.h": "c",
+    "debug.h": "c",
+    "mqtt_client.h": "c",
+    "os.h": "c",
+    "stdint.h": "c"
   },
   "C_Cpp.errorSquiggles": "Disabled"
 }
