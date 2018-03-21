@@ -64,7 +64,11 @@
                 "${workspaceRoot}/components/wear_levelling/include",
                 "${workspaceRoot}/components/spi_flash/include",
                 "${workspaceRoot}/components/spiffs/include",
-                "${workspaceRoot}/components/console"
+                "${workspaceRoot}/components/console",
+                "${workspaceRoot}/components/lwip/include/lwip",
+                "${workspaceRoot}/components/lwip/include/lwip/port",
+                "D:/DevKit/msys32/home/xuanze/esp/components/espmqtt/include",
+                "${workspaceRoot}/components/tcpip_adapter/include"
             ],
             "defines": [
                 "_DEBUG",
