@@ -2,13 +2,13 @@ menu "Example Configuration"
 
 config WIFI_SSID
     string "WiFi SSID"
-	default "myssid"
+	default "X-elerator"
 	help
 		SSID (network name) for the example to connect to.
 
 config WIFI_PASSWORD
     string "WiFi Password"
-	default "myssid"
+	default "sz12345678"
 	help
 		WiFi password (WPA or WPA2) for the example to use.
 
