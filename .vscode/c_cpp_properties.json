@@ -68,7 +68,9 @@
                 "${workspaceRoot}/components/lwip/include/lwip",
                 "${workspaceRoot}/components/lwip/include/lwip/port",
                 "D:/DevKit/msys32/home/xuanze/esp/components/espmqtt/include",
-                "${workspaceRoot}/components/tcpip_adapter/include"
+                "${workspaceRoot}/components/tcpip_adapter/include",
+                "${workspaceRoot}/components/tcpip_adapter/include",
+                "${workspaceRoot}/examples/wifi/iperf/components"
             ],
             "defines": [
                 "_DEBUG",
