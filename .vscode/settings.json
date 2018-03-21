@@ -38,7 +38,8 @@
     "ctype.h": "c",
     "argtable3.h": "c",
     "cmd_decl.h": "c",
-    "sockets.h": "c"
+    "sockets.h": "c",
+    "platform.h": "c"
   },
   "C_Cpp.errorSquiggles": "Disabled"
 }
