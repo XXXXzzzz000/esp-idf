@@ -12,7 +12,7 @@
 #include "esp_system.h"
 #include "esp_spi_flash.h"
 
-
+#define TEST_MARCO 1
 void app_main()
 {
     printf("Hello world!\n");
@@ -20,6 +20,7 @@ void app_main()
     /* Print chip information */
     esp_chip_info_t chip_info;
     esp_chip_info(&chip_info);
+    ESP_LOGI(#TEST_MARCO,"hello");
     printf("This is ESP32 chip with %d CPU cores, WiFi%s%s, ",
             chip_info.cores,
             (chip_info.features & CHIP_FEATURE_BT) ? "/BT" : "",
