@@ -33,3 +33,4 @@
 #include "air_adc.h"
 #include "air_storge.h"
 #include "cmd_decl.h"
+#include "air_mqtt.h"

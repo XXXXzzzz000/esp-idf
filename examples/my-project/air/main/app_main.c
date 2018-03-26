@@ -9,7 +9,6 @@
 
 #include "my_esp32_header.h"
 
-
 static const char *TAG = "example";
 
 /* Console command history can be stored to and loaded from a file.
@@ -175,12 +174,24 @@ void console_task(void *parm)
 }
 void app_main()
 {
+    ESP_LOGI(TAG, "[APP] Startup..");
+    ESP_LOGI(TAG, "[APP] Free memory: %d bytes", esp_get_free_heap_size());
+    ESP_LOGI(TAG, "[APP] IDF version: %s", esp_get_idf_version());
+
+    esp_log_level_set("*", ESP_LOG_INFO);
+    esp_log_level_set("MQTT_CLIENT", ESP_LOG_VERBOSE);
+    esp_log_level_set("TRANSPORT_TCP", ESP_LOG_VERBOSE);
+    esp_log_level_set("TRANSPORT_SSL", ESP_LOG_VERBOSE);
+    esp_log_level_set("TRANSPORT", ESP_LOG_VERBOSE);
+    esp_log_level_set("OUTBOX", ESP_LOG_VERBOSE);
     //初始化存储
     cmd_storge_init();
-
+    //console 线程
+    xTaskCreate(console_task, "console_task", 8192, NULL, 3, NULL);
     //adc 线程
     xTaskCreate(air_adc_get_task, "air_adc_get_task", 4096, NULL, 2, &xAirAdcHandle);
 
-    //console 线程
-    xTaskCreate(console_task, "console_task", 8192, NULL, 3, NULL);
+    air_wifi_init();
+
+    mqtt_app_start();
 }
