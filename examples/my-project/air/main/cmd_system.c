@@ -34,7 +34,7 @@ void register_system()
 
 /** 'restart' command restarts the program */
 
-static int restart(int argc, char** argv)
+static int restart(int argc, char **argv)
 {
     ESP_LOGI(__func__, "Restarting");
     esp_restart();
@@ -53,7 +53,7 @@ static void register_restart()
 
 /** 'free' command prints available heap memory */
 
-static int free_mem(int argc, char** argv)
+static int free_mem(int argc, char **argv)
 {
     printf("%d\n", esp_get_free_heap_size());
     return 0;
@@ -73,10 +73,10 @@ static void register_free()
 /** 'tasks' command prints the list of tasks and related information */
 #if WITH_TASKS_INFO
 
-static int tasks_info(int argc, char** argv)
+static int tasks_info(int argc, char **argv)
 {
     const size_t bytes_per_task = 40; /* see vTaskList description */
-    char* task_list_buffer = malloc(uxTaskGetNumberOfTasks() * bytes_per_task);
+    char *task_list_buffer = malloc(uxTaskGetNumberOfTasks() * bytes_per_task);
     if (task_list_buffer == NULL) {
         ESP_LOGE(__func__, "failed to allocate buffer for vTaskList output");
         return 1;
@@ -111,9 +111,9 @@ static struct {
 } deep_sleep_args;
 
 
-static int deep_sleep(int argc, char** argv)
+static int deep_sleep(int argc, char **argv)
 {
-    int nerrors = arg_parse(argc, argv, (void**) &deep_sleep_args);
+    int nerrors = arg_parse(argc, argv, (void **) &deep_sleep_args);
     if (nerrors != 0) {
         arg_print_errors(stderr, deep_sleep_args.end, argv[0]);
         return 1;
@@ -138,7 +138,7 @@ static int deep_sleep(int argc, char** argv)
             }
         }
         ESP_LOGI(__func__, "Enabling wakeup on GPIO%d, wakeup on %s level",
-                io_num, level ? "HIGH" : "LOW");
+                 io_num, level ? "HIGH" : "LOW");
 
         ESP_ERROR_CHECK( esp_sleep_enable_ext1_wakeup(1ULL << io_num, level) );
     }
@@ -149,19 +149,19 @@ static int deep_sleep(int argc, char** argv)
 static void register_deep_sleep()
 {
     deep_sleep_args.wakeup_time =
-            arg_int0("t", "time", "<t>", "Wake up time, ms");
+        arg_int0("t", "time", "<t>", "Wake up time, ms");
     deep_sleep_args.wakeup_gpio_num =
-            arg_int0(NULL, "io", "<n>",
-                     "If specified, wakeup using GPIO with given number");
+        arg_int0(NULL, "io", "<n>",
+                 "If specified, wakeup using GPIO with given number");
     deep_sleep_args.wakeup_gpio_level =
-            arg_int0(NULL, "io_level", "<0|1>", "GPIO level to trigger wakeup");
+        arg_int0(NULL, "io_level", "<0|1>", "GPIO level to trigger wakeup");
     deep_sleep_args.end = arg_end(3);
 
     const esp_console_cmd_t cmd = {
         .command = "deep_sleep",
         .help = "Enter deep sleep mode. "
-                "Two wakeup modes are supported: timer and GPIO. "
-                "If no wakeup option is specified, will sleep indefinitely.",
+        "Two wakeup modes are supported: timer and GPIO. "
+        "If no wakeup option is specified, will sleep indefinitely.",
         .hint = NULL,
         .func = &deep_sleep,
         .argtable = &deep_sleep_args
@@ -171,7 +171,7 @@ static void register_deep_sleep()
 
 /** This command helps maintain sanity when testing console example from a console */
 
-static int make(int argc, char** argv)
+static int make(int argc, char **argv)
 {
     int count = REG_READ(RTC_CNTL_STORE0_REG);
     if (++count >= 3) {
@@ -180,8 +180,8 @@ static int make(int argc, char** argv)
     }
     REG_WRITE(RTC_CNTL_STORE0_REG, count);
 
-    const char* make_output =
-R"(LD build/console.elf
+    const char *make_output =
+        R"(LD build/console.elf
 esptool.py v2.1-beta1
 )";
 

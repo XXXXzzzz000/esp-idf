@@ -3,9 +3,9 @@
 
 static const char *TAG = "AIR_ADC";
 
-#define DEFAULT_VREF 1100 //使用adc2_vref_to_gpio（）来获得更好的估计
-#define NO_OF_SAMPLES 128  //多重采样
-#define TASK_PERIOD (60*100)   //100任务周期1s
+#define DEFAULT_VREF 1100      //使用adc2_vref_to_gpio（）来获得更好的估计
+#define NO_OF_SAMPLES 128      //多重采样
+#define TASK_PERIOD (60 * 100) //100任务周期1s
 xTaskHandle xAirAdcHandle = NULL;
 static esp_adc_cal_characteristics_t *adc_chars;
 static const adc_channel_t channel = ADC_CHANNEL_6;  //GPIO34 if ADC1, GPIO14 if ADC2
@@ -19,25 +19,19 @@ static uint64_t adc_runtime = 0;
 //检查adc的参考电压值
 static void check_efuse ()
 {
-	//检查TP是否被烧入eFuse
-	if (esp_adc_cal_check_efuse (ESP_ADC_CAL_VAL_EFUSE_TP) == ESP_OK)
-		{
-			ESP_LOGI (TAG, "eFuse Two Point: Supported\n");
-		}
-	else
-		{
-			ESP_LOGI (TAG, "eFuse Two Point: NOT supported\n");
-		}
+    //检查TP是否被烧入eFuse
+    if (esp_adc_cal_check_efuse (ESP_ADC_CAL_VAL_EFUSE_TP) == ESP_OK) {
+        ESP_LOGI (TAG, "eFuse Two Point: Supported\n");
+    } else {
+        ESP_LOGI (TAG, "eFuse Two Point: NOT supported\n");
+    }
 
-	//检查Vref是否被烧入eFuse
-	if (esp_adc_cal_check_efuse (ESP_ADC_CAL_VAL_EFUSE_VREF) == ESP_OK)
-		{
-			ESP_LOGI (TAG, "eFuse Vref: Supported\n");
-		}
-	else
-		{
-			ESP_LOGI (TAG, "eFuse Vref: NOT supported\n");
-		}
+    //检查Vref是否被烧入eFuse
+    if (esp_adc_cal_check_efuse (ESP_ADC_CAL_VAL_EFUSE_VREF) == ESP_OK) {
+        ESP_LOGI (TAG, "eFuse Vref: Supported\n");
+    } else {
+        ESP_LOGI (TAG, "eFuse Vref: NOT supported\n");
+    }
 }
 
 #endif
@@ -45,16 +39,11 @@ static void check_efuse ()
 //打印adc检查值
 static void print_char_val_type(esp_adc_cal_value_t val_type)
 {
-    if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP)
-    {
+    if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP) {
         ESP_LOGI(TAG, "Characterized using Two Point Value\n");
-    }
-    else if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF)
-    {
+    } else if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
         ESP_LOGI(TAG, "Characterized using eFuse Vref\n");
-    }
-    else
-    {
+    } else {
         ESP_LOGI(TAG, "Characterized using Default Vref\n");
     }
 }
@@ -96,8 +85,7 @@ static uint32_t air_adc_get_voltage()
     uint32_t adc_reading2 = 0;
 
     //多重采样两个通道,求其均值
-    for (int i = 0; i < NO_OF_SAMPLES; i++)
-    {
+    for (int i = 0; i < NO_OF_SAMPLES; i++) {
         adc_reading += adc1_get_raw((adc1_channel_t)channel);
         adc_reading2 += adc1_get_raw((adc1_channel_t)channel2);
     }
@@ -119,8 +107,8 @@ static uint32_t air_adc_get_voltage()
     cmd_storge_write(MQ_135, adc_reading, voltage, adc_runtime);
     cmd_storge_write(MQ_136, adc_reading2, voltage2, adc_runtime);
 
-    onenet_publish(client,"MQ_135" ,voltage);
-    onenet_publish(client,"MQ_136" ,voltage2);
+    onenet_publish(client, "MQ_135", voltage);
+    onenet_publish(client, "MQ_136", voltage2);
 
     return voltage;
 }
@@ -136,8 +124,7 @@ void air_adc_get_task(void *parm)
     air_adc_init();
     ESP_LOGD(TAG, "adc task creat ok");
 
-    while (1)
-    {
+    while (1) {
         //等待下一个周期
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
@@ -153,8 +140,7 @@ void air_adc_get_task(void *parm)
 /* console 命令 */
 static int cmd_adc_delete(int argc, char **argv)
 {
-    if (xAirAdcHandle == NULL)
-    {
+    if (xAirAdcHandle == NULL) {
         ESP_LOGE(TAG, "air task handler is null");
         return -1;
     }
@@ -169,8 +155,7 @@ static int cmd_adc_creat(int argc, char **argv)
 {
     //adc 线程
     // xTaskCreate(air_adc_get_task, "air_adc_get_task", 4096, NULL, 2, &xAirAdcHandle);
-    if (xAirAdcHandle == NULL)
-    {
+    if (xAirAdcHandle == NULL) {
         ESP_LOGE(TAG, "air task handler is null");
         return -1;
     }
@@ -182,33 +167,31 @@ static int cmd_adc_creat(int argc, char **argv)
 /** commonds register*/
 void register_adc()
 {
-    esp_console_cmd_t cmd_table[] =
+    esp_console_cmd_t cmd_table[] = {
+
         {
+            .command = "adc_delete",
+            .help = "",
+            .hint = NULL,
+            .func = &cmd_adc_delete,
+        },
+        {
+            .command = "adc_creat",
+            .help = "",
+            .hint = NULL,
+            .func = &cmd_adc_creat,
+        },
+        {
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+        }
 
-            {
-                .command = "adc_delete",
-                .help = "",
-                .hint = NULL,
-                .func = &cmd_adc_delete,
-            },
-            {
-                .command = "adc_creat",
-                .help = "",
-                .hint = NULL,
-                .func = &cmd_adc_creat,
-            },
-            {
-                NULL,
-                NULL,
-                NULL,
-                NULL,
-                NULL,
-            }
+    };
 
-        };
-
-    for (esp_console_cmd_t *p = cmd_table; p->command != NULL; p++)
-    {
+    for (esp_console_cmd_t *p = cmd_table; p->command != NULL; p++) {
         ESP_ERROR_CHECK(esp_console_cmd_register(p));
     }
 }
