@@ -45,7 +45,15 @@
     "debug.h": "c",
     "mqtt_client.h": "c",
     "os.h": "c",
-    "stdint.h": "c"
+    "stdint.h": "c",
+    "string.h": "c",
+    "esp_event_loop.h": "c",
+    "time.h": "c",
+    "onenet_helper.h": "c",
+    "netdb.h": "c",
+    "assert.h": "c",
+    "mqtt_config.h": "c",
+    "air_mqtt.h": "c"
   },
   "C_Cpp.errorSquiggles": "Disabled"
 }
