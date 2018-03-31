@@ -14,7 +14,7 @@
 #include "soc/uart_struct.h"
 #include "string.h"
 
-static const int RX_BUF_SIZE = 1024;
+static const int RX_BUF_SIZE = 256;
 
 #define TXD_PIN (GPIO_NUM_4)
 #define RXD_PIN (GPIO_NUM_5)
@@ -46,7 +46,7 @@ static void tx_task()
     static const char *TX_TASK_TAG = "TX_TASK";
     esp_log_level_set(TX_TASK_TAG, ESP_LOG_INFO);
     while (1) {
-        sendData(TX_TASK_TAG, "Hello world");
+        sendData(TX_TASK_TAG, "Hello world\n");
         vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
 }
