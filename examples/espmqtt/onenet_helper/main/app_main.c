@@ -1,11 +1,32 @@
-#include "air_mqtt.h"
+#include <stdio.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <string.h>
+#include "esp_wifi.h"
+#include "esp_system.h"
+#include "nvs_flash.h"
+#include "esp_event_loop.h"
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/semphr.h"
+#include "freertos/queue.h"
+#include "freertos/event_groups.h"
+
+#include "lwip/sockets.h"
+#include "lwip/dns.h"
+#include "lwip/netdb.h"
+
+#include "esp_log.h"
+#include "onenet_helper.h"
+// #include "mqtt_client.h"
 
 
 static const char *TAG = "MQTT_SAMPLE";
-
+#if 0
 static EventGroupHandle_t wifi_event_group;
 const static int CONNECTED_BIT = BIT0;
-esp_mqtt_client_handle_t client = NULL;
+void onenet_publish(esp_mqtt_client_handle_t client);
 
 // static void print_event(esp_mqtt_event_handle_t event)
 // {
@@ -21,7 +42,7 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
     //连接完成事件
     case MQTT_EVENT_CONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
-        // onenet_publish(client);
+        onenet_publish(client);
 //两个订阅,等级不同
 #if 0
         msg_id = esp_mqtt_client_subscribe(client, "/26942674/qos0", 0);
@@ -55,8 +76,8 @@ static esp_err_t mqtt_event_handler(esp_mqtt_event_handle_t event)
     //发布完成事件
     case MQTT_EVENT_PUBLISHED:
         ESP_LOGI(TAG, "MQTT_EVENT_PUBLISHED, msg_id=%d", event->msg_id);
-        // vTaskDelay(500);
-        // onenet_publish(client);
+        vTaskDelay(500);
+        onenet_publish(client);
         break;
     //数据事件
     case MQTT_EVENT_DATA:
@@ -92,8 +113,31 @@ static esp_err_t wifi_event_handler(void *ctx, system_event_t *event)
     }
     return ESP_OK;
 }
+void wifi_init_sta()
+{
+    wifi_event_group = xEventGroupCreate();
 
-void air_wifi_init(void)
+    tcpip_adapter_init();
+    ESP_ERROR_CHECK(esp_event_loop_init(wifi_event_handler, NULL) );
+
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+    wifi_config_t wifi_config = {
+        .sta = {
+            .ssid = CONFIG_WIFI_SSID,
+            .password = CONFIG_WIFI_PASSWORD,
+        },
+    };
+
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
+    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
+    ESP_ERROR_CHECK(esp_wifi_start() );
+
+    ESP_LOGI(TAG, "wifi_init_sta finished.");
+    ESP_LOGI(TAG, "connect to ap SSID:%s password:%s",
+             CONFIG_WIFI_SSID, CONFIG_WIFI_PASSWORD);
+}
+static void wifi_init(void)
 {
 
     tcpip_adapter_init();
@@ -116,7 +160,7 @@ void air_wifi_init(void)
     xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, false, true, portMAX_DELAY);
 }
 
-void mqtt_app_start(void)
+static void mqtt_app_start(void)
 {
     const esp_mqtt_client_config_t mqtt_cfg = {
         .event_handle = mqtt_event_handler,
@@ -135,25 +179,60 @@ void mqtt_app_start(void)
         // .user_context = (void *)your_context
     };
 
-    client = esp_mqtt_client_init(&mqtt_cfg);
+    esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_cfg);
     esp_mqtt_client_start(client);
 }
 
-void onenet_publish(esp_mqtt_client_handle_t client, char *name, float val)
+void onenet_publish(esp_mqtt_client_handle_t client)
 {
-    // uint32_t val;
+    uint32_t val;
     int msg_id;
-    // val = esp_random() % 20 + 15;
+    val = esp_random() % 20 + 15;
 
     char buf[128];
     memset(buf, 0, sizeof(buf));
-    sprintf(&buf[3], "{\"%s\":%f}", name, val);
+    sprintf(&buf[3], "{\"%s\":%d}", "temperature", val);
     uint16_t len = strlen(&buf[3]);
     buf[0] = 0x03; //data_type_simple_json_without_time
     buf[1] = len >> 8;
     buf[2] = len & 0xFF;
     msg_id = esp_mqtt_client_publish(client, "$dp", buf, len + 3, 0, 0);
-    // ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
+    ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
 }
+#endif
+void app_main()
+{
+#if 0
+    ESP_LOGI(TAG, "[APP] Startup..");
+    ESP_LOGI(TAG, "[APP] Free memory: %d bytes", esp_get_free_heap_size());
+    ESP_LOGI(TAG, "[APP] IDF version: %s", esp_get_idf_version());
 
+    esp_log_level_set("*", ESP_LOG_INFO);
+    esp_log_level_set("MQTT_CLIENT", ESP_LOG_VERBOSE);
+    esp_log_level_set("TRANSPORT_TCP", ESP_LOG_VERBOSE);
+    esp_log_level_set("TRANSPORT_SSL", ESP_LOG_VERBOSE);
+    esp_log_level_set("TRANSPORT", ESP_LOG_VERBOSE);
+    esp_log_level_set("OUTBOX", ESP_LOG_VERBOSE);
 
+    nvs_flash_init();
+
+    wifi_init();
+    // wifi_init_sta();
+    mqtt_app_start();
+#endif
+/*
+enum MqttSaveDataType {
+    kTypeFullJson = 0x01,
+    kTypeBin = 0x02,
+    kTypeSimpleJsonWithoutTime = 0x03,
+    kTypeSimpleJsonWithTime = 0x04,
+    kTypeString = 0x05,
+    kTypeStringWithTime = 0x06,
+    kTypeFloat = 0x07
+};
+
+ */
+
+/* bin buffer test */
+
+}

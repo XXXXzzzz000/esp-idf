@@ -2,15 +2,17 @@
 #include "my_esp32_header.h"
 
 static const char *TAG = "AIR_ADC";
+#define USE_MQ_136
+#define USE_MQ_135
 
 #define DEFAULT_VREF 1100      //使用adc2_vref_to_gpio（）来获得更好的估计
 #define NO_OF_SAMPLES 128      //多重采样
-#define TASK_PERIOD (60 * 100) //100任务周期1s
+#define TASK_PERIOD (30 * 100)//1分钟 //100任务周期1s
 xTaskHandle xAirAdcHandle = NULL;
 static esp_adc_cal_characteristics_t *adc_chars;
-static const adc_channel_t channel = ADC_CHANNEL_6;  //GPIO34 if ADC1, GPIO14 if ADC2
-static const adc_channel_t channel2 = ADC_CHANNEL_5; //GPIO32 具体查看ESP32技术参考手册
-static const adc_atten_t atten = ADC_ATTEN_DB_11;
+static const adc_channel_t channel = ADC_CHANNEL_6;  //MQ135 GPIO34 if ADC1, GPIO14 if ADC2
+static const adc_channel_t channel2 = ADC_CHANNEL_5; //MQ136 GPIO32 具体查看ESP32技术参考手册
+static const adc_atten_t atten = ADC_ATTEN_DB_11;    //衰减设置
 static const adc_unit_t unit = ADC_UNIT_1;
 static uint64_t adc_runtime = 0;
 
@@ -74,43 +76,93 @@ static void air_adc_init()
 //获取自系统运行以来的秒数
 uint64_t get_time_s()
 {
+    //TODO: 改用gettimeofday
     return esp_timer_get_time() / 1000000;
 }
 
 //获取空气传感器的
 //读取adc值
-static uint32_t air_adc_get_voltage()
+static int air_adc_get_voltage()
 {
     uint32_t adc_reading = 0;
     uint32_t adc_reading2 = 0;
-
-    //多重采样两个通道,求其均值
+#if defined(USE_MQ_135)
+    //多重采样,求其均值
     for (int i = 0; i < NO_OF_SAMPLES; i++) {
         adc_reading += adc1_get_raw((adc1_channel_t)channel);
+    }
+    adc_reading /= NO_OF_SAMPLES;
+    float voltage = (float)(2 * esp_adc_cal_raw_to_voltage(adc_reading, adc_chars) / 1000.0);
+    float mq135_r = (float)((5.0  / voltage) - 1.0);
+
+    cmd_storge_write(MQ_135, adc_reading, voltage, adc_runtime);
+
+    onenet_publish(client, "MQ_135_V", voltage);
+    onenet_publish(client, "MQ_135_R", mq135_r);
+
+    ESP_LOGI(TAG, "Raw: %d\tVoltage: %fV\tTime:%lld\n", adc_reading, voltage, adc_runtime);
+    ESP_LOGI(TAG, "mq135_r: %f k\n", mq135_r);
+#endif
+#if defined(USE_MQ_136)
+
+    for (int i = 0; i < NO_OF_SAMPLES; i++) {
         adc_reading2 += adc1_get_raw((adc1_channel_t)channel2);
     }
 
-    adc_reading /= NO_OF_SAMPLES;
     adc_reading2 /= NO_OF_SAMPLES;
-
     //转换 adc_reading to voltage in mV
-    uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
-    uint32_t voltage2 = esp_adc_cal_raw_to_voltage(adc_reading2, adc_chars);
+    float voltage2 = (float)(2 * esp_adc_cal_raw_to_voltage(adc_reading2, adc_chars) / 1000.0);
+    float mq136_r = (float)((5.0 / voltage2 ) - 1.0);
 
-    voltage = voltage * 2;
-    voltage2 = voltage2 * 2;
-
-    // ESP_LOGI(TAG, "Raw: %d\tVoltage: %dmV\tTime:%lld\n", adc_reading, voltage, adc_runtime);
-    // ESP_LOGI(TAG, "Raw2: %d\tVoltage2: %dmV\tTime:%lld\n", adc_reading2, voltage2, adc_runtime);
-    //将读取的示数写入到文件内
-    //实际时间=adc_runtime*30s
-    cmd_storge_write(MQ_135, adc_reading, voltage, adc_runtime);
     cmd_storge_write(MQ_136, adc_reading2, voltage2, adc_runtime);
 
-    onenet_publish(client, "MQ_135", voltage);
-    onenet_publish(client, "MQ_136", voltage2);
+    onenet_publish(client, "MQ_136_V", voltage2);
+    onenet_publish(client, "MQ_136_R", mq136_r);
 
-    return voltage;
+    ESP_LOGI(TAG, "Raw2: %d\tVoltage2: %fV\tTime:%lld\n", adc_reading2, voltage2, adc_runtime);
+    ESP_LOGI(TAG, "mq136_r: %f k\n", mq136_r);
+#endif
+    ESP_LOGI(TAG, "\n\n\n\n");
+
+    // // uint32_t adc_reading = 0;
+    // uint32_t adc_reading2 = 0;
+
+    // //多重采样两个通道,求其均值
+    // for (int i = 0; i < NO_OF_SAMPLES; i++) {
+    //     // adc_reading += adc1_get_raw((adc1_channel_t)channel);
+    //     adc_reading2 += adc1_get_raw((adc1_channel_t)channel2);
+    // }
+
+    // // adc_reading /= NO_OF_SAMPLES;
+    // adc_reading2 /= NO_OF_SAMPLES;
+
+    // //转换 adc_reading to voltage in mV
+    // // uint32_t voltage = esp_adc_cal_raw_to_voltage(adc_reading, adc_chars);
+    // uint32_t voltage2 = esp_adc_cal_raw_to_voltage(adc_reading2, adc_chars);
+
+    // // voltage = voltage * 2;
+    // voltage2 = voltage2 * 2;
+
+    // //将读取的示数写入到文件内
+    // //实际时间=adc_runtime*30s
+    // // cmd_storge_write(MQ_135, adc_reading, voltage, adc_runtime);
+    // cmd_storge_write(MQ_136, adc_reading2, voltage2, adc_runtime);
+
+    // // onenet_publish(client, "MQ_135_V", voltage);
+    // onenet_publish(client, "MQ_136_V", voltage2);
+
+    // // float mq135_r = (float)((5.0  / (voltage / 1000.0)) - 1.0);
+    // float mq136_r = (float)((5.0 / (voltage2 / 1000.0)) - 1.0);
+
+    // // ESP_LOGI(TAG, "mq135_r: %f k\n", mq135_r);
+    // ESP_LOGI(TAG, "mq136_r: %f k\n", mq136_r);
+
+    // // onenet_publish(client, "MQ_135_R", mq135_r);
+    // onenet_publish(client, "MQ_136_R", mq136_r);
+
+    // ESP_LOGI(TAG, "\n\n\n\n");
+
+    return 0;
 }
 
 //获取adc值的任务 30s运行一次

@@ -1,8 +1,11 @@
 
 #include "onenet_helper.h"
+
+#define MQTT_HELPER_TEST
+
 #if defined(MQTT_HELPER_TEST)
 static const  char *TAG = "ONENET_HELPER";
-
+#endif
 
 int Mqtt_PackDataPointByBinary(esp_mqtt_client_handle_t client, uint16_t pkt_id, const char *dsid,
                                const char *desc, int64_t ts, const char *bin, uint32_t size,
@@ -46,6 +49,7 @@ int Mqtt_PackDataPointByBinary(esp_mqtt_client_handle_t client, uint16_t pkt_id,
     memcpy(payload + bin_offset + 4,
            bin, size);
 #if defined(MQTT_HELPER_TEST)
+    ret = 0;
     ESP_LOG_BUFFER_HEX(TAG, payload, payload_size);
 #else
     ret = esp_mqtt_client_publish(client, MQTTSAVEDPTOPICNAME, payload, payload_size, qos, retain);
@@ -102,6 +106,7 @@ int Mqtt_PackDataPointByString(esp_mqtt_client_handle_t client, uint16_t pkt_id,
 
         // ret = Mqtt_PackPublishPkt(buf, pkt_id, MQTTSAVEDPTOPICNAME, payload, payload_size, qos, retain, own);
 #if defined(MQTT_HELPER_TEST)
+        ret = 0;
         ESP_LOG_BUFFER_HEX(TAG, payload, payload_size);
 #else
         ret = esp_mqtt_client_publish(client, MQTTSAVEDPTOPICNAME, payload, payload_size, qos, retain);
@@ -151,6 +156,7 @@ int Mqtt_PackDataPointByString(esp_mqtt_client_handle_t client, uint16_t pkt_id,
         memcpy(payload + offset + 1, str, size);
         // ret = Mqtt_PackPublishPkt(buf, pkt_id, MQTTSAVEDPTOPICNAME, payload, payload_size, qos, retain, own);
 #if defined(MQTT_HELPER_TEST)
+        ret = 0;
         ESP_LOG_BUFFER_HEX(TAG, payload, payload_size);
 #else
         ret = esp_mqtt_client_publish(client, MQTTSAVEDPTOPICNAME, payload, payload_size, qos, retain);

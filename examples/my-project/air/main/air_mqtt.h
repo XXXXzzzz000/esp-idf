@@ -23,6 +23,6 @@
 #include "mqtt_client.h"
 extern esp_mqtt_client_handle_t client;
 
-void onenet_publish(esp_mqtt_client_handle_t client,char * name ,uint32_t val);
+void onenet_publish(esp_mqtt_client_handle_t client,char * name ,float val);
 void mqtt_app_start(void);
 void air_wifi_init(void);
