@@ -142,7 +142,7 @@ static esp_ble_adv_params_t adv_params = {
     .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,//过滤策略
 };
 
-//gatt 规范实例类型
+//gatt profile实例类型
 struct gatts_profile_inst
 {
     esp_gatts_cb_t gatts_cb;
@@ -158,11 +158,11 @@ struct gatts_profile_inst
     uint16_t descr_handle;
     esp_bt_uuid_t descr_uuid;
 };
-//gatt规范事件处理程序声明
+//gattprofile事件处理程序声明
 static void gatts_profile_event_handler(esp_gatts_cb_event_t event,
                                         esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 
-//gatt 规范实例类型数组
+//gatt profile实例类型数组
 /* One gatt-based profile one app_id and one gatts_if, this array will store the gatts_if returned by ESP_GATTS_REG_EVT */
 static struct gatts_profile_inst heart_rate_profile_tab[PROFILE_NUM] = {
     [PROFILE_APP_IDX] = {

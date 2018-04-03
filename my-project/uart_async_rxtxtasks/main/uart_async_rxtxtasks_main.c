@@ -16,7 +16,7 @@
 
 #include "TinyFrame.h"
 
-static const int RX_BUF_SIZE = 256;
+#define RX_SIZE  256
 
 #define TXD_PIN (GPIO_NUM_4)
 #define RXD_PIN (GPIO_NUM_5)
@@ -103,7 +103,7 @@ void init()
     uart_param_config(UART_NUM_1, &uart_config);
     uart_set_pin(UART_NUM_1, TXD_PIN, RXD_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
     // We won't use a buffer for sending data.
-    uart_driver_install(UART_NUM_1, RX_BUF_SIZE * 2, 0, 0, NULL, 0);
+    uart_driver_install(UART_NUM_1, RX_SIZE * 2, 0, 0, NULL, 0);
 }
 
 int sendData(const char *logName, const char *data)
@@ -126,29 +126,27 @@ static void tx_task()
         txBytes = uart_write_bytes(UART_NUM_1, buf, 256);
     }
 }
-
 static void rx_task()
 {
     static const char *RX_TASK_TAG = "RX_TASK";
     esp_log_level_set(RX_TASK_TAG, ESP_LOG_INFO);
-    uint8_t *data = (uint8_t *) malloc(RX_BUF_SIZE + 1);
+    uint8_t data[RX_SIZE + 1];
     while (1) {
-        int rxBytes = uart_read_bytes(UART_NUM_1, data, RX_BUF_SIZE, 10 / portTICK_RATE_MS);
+        memset(data, 0, RX_SIZE + 1);
+        int rxBytes = uart_read_bytes(UART_NUM_1, data, RX_SIZE, 10 / portTICK_RATE_MS);
         if (rxBytes > 0) {
-            // data[rxBytes] = 0;
             TF_Accept(demo_tf, &data, rxBytes);
-            ESP_LOGI(RX_TASK_TAG, "Read %d bytes: '%s'", rxBytes, data);
-            ESP_LOG_BUFFER_HEXDUMP(RX_TASK_TAG, data, rxBytes, ESP_LOG_INFO);
         }
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        vTaskDelay(20 / portTICK_PERIOD_MS);
+
     }
-    free(data);
 }
 
 void app_main()
 {
     init();
-    xTaskCreate(rx_task, "uart_rx_task", 1024 * 2, NULL, configMAX_PRIORITIES, NULL);
+    // xTaskCreatePinnedToCore(rx_task, "uart_rx_task", 1024 * 2, NULL, configMAX_PRIORITIES, NULL, 1);
+    xTaskCreate(rx_task, "uart_rx_task", 2048 * 2, NULL, configMAX_PRIORITIES, NULL);
     vTaskDelay(2000 / portTICK_PERIOD_MS);
     TF_Msg msg;
     const char *longstr = "Lorem ipsum dolor sit amet.";
