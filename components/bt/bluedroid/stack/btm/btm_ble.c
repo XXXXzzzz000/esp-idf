@@ -605,18 +605,23 @@ void BTM_ReadDevInfo (BD_ADDR remote_bda, tBT_DEVICE_TYPE *p_dev_type, tBLE_ADDR
 {
     tBTM_SEC_DEV_REC  *p_dev_rec = btm_find_dev (remote_bda);
     tBTM_INQ_INFO     *p_inq_info = BTM_InqDbRead(remote_bda);
+    tBLE_ADDR_TYPE    temp_addr_type = (*p_addr_type);
 
     *p_addr_type = BLE_ADDR_PUBLIC;
 
-    if (!p_dev_rec) {
+    if (!p_dev_rec) {  
         *p_dev_type = BT_DEVICE_TYPE_BREDR;
         /* Check with the BT manager if details about remote device are known */
         if (p_inq_info != NULL) {
             *p_dev_type = p_inq_info->results.device_type ;
             *p_addr_type = p_inq_info->results.ble_addr_type;
         } else {
-            /* unknown device, assume BR/EDR */
-            BTM_TRACE_DEBUG ("btm_find_dev_type - unknown device, BR/EDR assumed");
+            if(temp_addr_type <= BLE_ADDR_TYPE_MAX) {
+                *p_addr_type = temp_addr_type;
+            } else {
+                /* unknown device, assume BR/EDR */
+                BTM_TRACE_DEBUG ("btm_find_dev_type - unknown device, BR/EDR assumed");
+            }
         }
     } else { /* there is a security device record exisitng */
         /* new inquiry result, overwrite device type in security device record */
@@ -1937,7 +1942,14 @@ void btm_ble_conn_complete(UINT8 *p, UINT16 evt_len, BOOLEAN enhanced)
             handle = HCID_GET_HANDLE (handle);
 
             btm_ble_connected(bda, handle, HCI_ENCRYPT_MODE_DISABLED, role, bda_type, match);
-
+            if(role == HCI_ROLE_SLAVE) {
+                //clear p_cb->state, controller will stop adv when ble connected.
+                tBTM_BLE_INQ_CB *p_cb = &btm_cb.ble_ctr_cb.inq_var;
+                if(p_cb) {
+                    p_cb->adv_mode = BTM_BLE_ADV_DISABLE;
+                    p_cb->state = BTM_BLE_STOP_ADV; 
+                }
+            }
             l2cble_conn_comp (handle, role, bda, bda_type, conn_interval,
                               conn_latency, conn_timeout);
 

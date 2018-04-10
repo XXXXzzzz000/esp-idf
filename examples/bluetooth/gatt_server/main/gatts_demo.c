@@ -857,30 +857,26 @@ void app_main()
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
     /* 初始化bt */
     ret = esp_bt_controller_init(&bt_cfg);
-    if (ret)
-    {
-        ESP_LOGE(GATTS_TAG, "%s initialize controller failed\n", __func__);
+    if (ret) {
+        ESP_LOGE(GATTS_TAG, "%s initialize controller failed: %s\n", __func__, esp_err_to_name(ret));
         return;
     }
     /* 使能bt */
     ret = esp_bt_controller_enable(ESP_BT_MODE_BLE);
-    if (ret)
-    {
-        ESP_LOGE(GATTS_TAG, "%s enable controller failed\n", __func__);
+    if (ret) {
+        ESP_LOGE(GATTS_TAG, "%s enable controller failed: %s\n", __func__, esp_err_to_name(ret));
         return;
     }
     /* 初始化 bluedroid */
     ret = esp_bluedroid_init();
-    if (ret)
-    {
-        ESP_LOGE(GATTS_TAG, "%s init bluetooth failed\n", __func__);
+    if (ret) {
+        ESP_LOGE(GATTS_TAG, "%s init bluetooth failed: %s\n", __func__, esp_err_to_name(ret));
         return;
     }
     /* 使能 bluedroid */
     ret = esp_bluedroid_enable();
-    if (ret)
-    {
-        ESP_LOGE(GATTS_TAG, "%s enable bluetooth failed\n", __func__);
+    if (ret) {
+        ESP_LOGE(GATTS_TAG, "%s enable bluetooth failed: %s\n", __func__, esp_err_to_name(ret));
         return;
     }
     /* 注册 gatt回调 */
