@@ -51,3 +51,8 @@ examples/protocols/aws_iot/*/main/certs/*.pem.*
 *.gcno
 coverage.info
 coverage_report/
+
+# my project files
+my-project/**/sdkconfig
+my-project/**/sdkconfig.old
+my-project/**/build
