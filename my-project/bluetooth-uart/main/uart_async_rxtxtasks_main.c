@@ -17,10 +17,12 @@
 #include "TinyFrame.h"
 #include "service_table.h"
 
-void cmd_test()
-{
+/**
+ * @brief 通过串口发送测试命令并通过接收线程接收数据
+ *
+ */
+#define TAG "main"
 
-}
 void app_main()
 {
     esp_err_t ret;
@@ -36,9 +38,10 @@ void app_main()
 
     // xTaskCreate(rx_task, "uart_rx_task", 1024 * 2, NULL, configMAX_PRIORITIES, NULL);
     // vTaskDelay(2000 / portTICK_PERIOD_MS);
-    // while (1) {
-    //     ESP_LOGE("info", "running");
-    //     vTaskDelay(2000 / portTICK_PERIOD_MS);
-    // }
+    while (1) {
+        ESP_LOGI(TAG, "发送成功");
+
+        vTaskDelay(2000 / portTICK_PERIOD_MS);
+    }
     // xTaskCreate(tx_task, "uart_tx_task", 1024 * 2, NULL, configMAX_PRIORITIES - 1, NULL);
 }

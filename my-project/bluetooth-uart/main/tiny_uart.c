@@ -43,6 +43,7 @@ void dumpFrameInfo(TF_Msg *msg)
              "   len: %u\r\n"
              "    id: %Xh\r\n\r\n",
              msg->type, msg->len, msg->data, msg->len, msg->frame_id);
+    ESP_LOG_BUFFER_HEX("raw data:",msg->data, msg->len);
 }
 
 void TF_WriteImpl(TinyFrame *tf, const uint8_t *buff, uint32_t len)
@@ -72,12 +73,12 @@ TF_Result myListener(TinyFrame *tf, TF_Msg *msg)
     return TF_STAY;
 }
 
-TF_Result testIdListener(TinyFrame *tf, TF_Msg *msg)
-{
-    ESP_LOGI(TF_TAG, "OK - ID Listener triggered for msg!\r\n");
-    dumpFrameInfo(msg);
-    return TF_CLOSE;
-}
+// TF_Result testIdListener(TinyFrame *tf, TF_Msg *msg)
+// {
+//     ESP_LOGI(TF_TAG, "OK - ID Listener triggered for msg!\r\n");
+//     dumpFrameInfo(msg);
+//     return TF_CLOSE;
+// }
 
 
 
