@@ -56,3 +56,4 @@ coverage_report/
 my-project/**/sdkconfig
 my-project/**/sdkconfig.old
 my-project/**/build
+test_multi_heap_host

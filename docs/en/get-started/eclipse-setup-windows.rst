@@ -1,6 +1,7 @@
 **********************
 Eclipse IDE on Windows
 **********************
+:link_to_translation:`zh_CN:[中文]`
 
 Configuring Eclipse on Windows requires some different steps. The full configuration steps for Windows are shown below.
 
@@ -60,6 +61,9 @@ Project Properties
 
      * In the list of providers, click "CDT GCC Build Output Parser" and type ``xtensa-esp32-elf-`` at the beginning of the Compiler command pattern, and wrap remaining part with brackets. This means the full Compiler command pattern should be ``xtensa-esp32-elf-((g?cc)|([gc]\+\+)|(clang))``
 
+Navigate to "C/C++ General" -> "Indexer" property page:
+
+* Uncheck "Allow heuristic resolution of includes". When this option is enabled Eclipse sometimes fails to find correct header directories.
 
 Building in Eclipse
 -------------------

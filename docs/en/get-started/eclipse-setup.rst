@@ -1,6 +1,7 @@
 ********************************
 Build and Flash with Eclipse IDE
 ********************************
+:link_to_translation:`zh_CN:[中文]`
 
 .. _eclipse-install-steps:
 
@@ -61,6 +62,10 @@ Navigate to "C/C++ General" -> "Preprocessor Include Paths" property page:
 * In the list of providers, click "CDT Cross GCC Built-in Compiler Settings". Under "Command to get compiler specs", replace the text ``${COMMAND}`` at the beginning of the line with ``xtensa-esp32-elf-gcc``. This means the full "Command to get compiler specs" should be ``xtensa-esp32-elf-gcc ${FLAGS} -E -P -v -dD "${INPUTS}"``.
 
 * In the list of providers, click "CDT GCC Build Output Parser" and type ``xtensa-esp32-elf-`` at the beginning of the Compiler command pattern. This means the full Compiler command pattern should be ``xtensa-esp32-elf-(g?cc)|([gc]\+\+)|(clang)``
+
+Navigate to "C/C++ General" -> "Indexer" property page:
+
+* Uncheck "Allow heuristic resolution of includes". When this option is enabled Eclipse sometimes fails to find correct header directories.
 
 .. _eclipse-build-project:
 

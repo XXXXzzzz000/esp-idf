@@ -1,6 +1,7 @@
 *****************************
 Linux 平台工具链的标准设置
 *****************************
+:link_to_translation:`en:[English]`
 
 安装前提
 =====================
@@ -9,11 +10,11 @@ Linux 平台工具链的标准设置
 
 - CentOS 7::
 
-    sudo yum install git wget make ncurses-devel flex bison gperf python pyserial
+    sudo yum install gcc git wget make ncurses-devel flex bison gperf python pyserial
 
 - Ubuntu and Debian::
 
-    sudo apt-get install git wget make libncurses-dev flex bison gperf python python-serial
+    sudo apt-get install gcc git wget make libncurses-dev flex bison gperf python python-serial
 
 - Arch::
 

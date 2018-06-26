@@ -18,6 +18,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <sys/unistd.h>
+#include <errno.h>
 #include "unity.h"
 #include "esp_log.h"
 #include "esp_system.h"
@@ -137,6 +138,81 @@ void test_fatfs_lseek(const char* filename)
     TEST_ASSERT_EQUAL(0, fclose(f));
 }
 
+void test_fatfs_truncate_file(const char* filename)
+{
+    int read = 0;
+    int truncated_len = 0;
+
+    const char input[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    char output[sizeof(input)];
+
+    FILE* f = fopen(filename, "wb");
+
+    TEST_ASSERT_NOT_NULL(f);
+    TEST_ASSERT_EQUAL(strlen(input), fprintf(f, input));
+
+    TEST_ASSERT_EQUAL(0, fclose(f));
+
+
+    // Extending file beyond size is not supported
+    TEST_ASSERT_EQUAL(-1, truncate(filename, strlen(input) + 1));
+    TEST_ASSERT_EQUAL(errno, EPERM);
+
+    TEST_ASSERT_EQUAL(-1, truncate(filename, -1));
+    TEST_ASSERT_EQUAL(errno, EPERM);
+
+
+    // Truncating should succeed
+    const char truncated_1[] = "ABCDEFGHIJ";
+    truncated_len = strlen(truncated_1);
+
+    TEST_ASSERT_EQUAL(0, truncate(filename, truncated_len));
+
+    f = fopen(filename, "rb");
+    TEST_ASSERT_NOT_NULL(f);
+    
+    memset(output, 0, sizeof(output));
+    read = fread(output, 1, sizeof(output), f);
+    
+    TEST_ASSERT_EQUAL(truncated_len, read);
+    TEST_ASSERT_EQUAL_STRING_LEN(truncated_1, output, truncated_len);
+
+    TEST_ASSERT_EQUAL(0, fclose(f));
+
+
+    // Once truncated, the new file size should be the basis 
+    // whether truncation should succeed or not
+    TEST_ASSERT_EQUAL(-1, truncate(filename, truncated_len + 1));
+    TEST_ASSERT_EQUAL(EPERM, errno);
+
+    TEST_ASSERT_EQUAL(-1, truncate(filename, strlen(input)));
+    TEST_ASSERT_EQUAL(EPERM, errno);
+
+    TEST_ASSERT_EQUAL(-1, truncate(filename, strlen(input) + 1));
+    TEST_ASSERT_EQUAL(EPERM, errno);
+
+    TEST_ASSERT_EQUAL(-1, truncate(filename, -1));
+    TEST_ASSERT_EQUAL(EPERM, errno);
+
+
+    // Truncating a truncated file should succeed
+    const char truncated_2[] = "ABCDE";
+    truncated_len = strlen(truncated_2);
+
+    TEST_ASSERT_EQUAL(0, truncate(filename, truncated_len));
+
+    f = fopen(filename, "rb");
+    TEST_ASSERT_NOT_NULL(f);
+    
+    memset(output, 0, sizeof(output));
+    read = fread(output, 1, sizeof(output), f);
+    
+    TEST_ASSERT_EQUAL(truncated_len, read);
+    TEST_ASSERT_EQUAL_STRING_LEN(truncated_2, output, truncated_len);
+
+    TEST_ASSERT_EQUAL(0, fclose(f));
+}
+
 void test_fatfs_stat(const char* filename, const char* root_dir)
 {
     struct tm tm;
@@ -194,7 +270,7 @@ void test_fatfs_link_rename(const char* filename_prefix)
 
     FILE* f = fopen(name_src, "w+");
     TEST_ASSERT_NOT_NULL(f);
-    char* str = "0123456789";
+    const char* str = "0123456789";
     for (int i = 0; i < 4000; ++i) {
         TEST_ASSERT_NOT_EQUAL(EOF, fputs(str, f));
     }
@@ -502,8 +578,9 @@ void test_fatfs_concurrent(const char* filename_prefix)
 
     const int cpuid_0 = 0;
     const int cpuid_1 = portNUM_PROCESSORS - 1;
-    xTaskCreatePinnedToCore(&read_write_task, "rw1", 2048, &args1, 3, NULL, cpuid_0);
-    xTaskCreatePinnedToCore(&read_write_task, "rw2", 2048, &args2, 3, NULL, cpuid_1);
+    const int stack_size = 4096;
+    xTaskCreatePinnedToCore(&read_write_task, "rw1", stack_size, &args1, 3, NULL, cpuid_0);
+    xTaskCreatePinnedToCore(&read_write_task, "rw2", stack_size, &args2, 3, NULL, cpuid_1);
 
     xSemaphoreTake(args1.done, portMAX_DELAY);
     printf("f1 done\n");
@@ -519,10 +596,10 @@ void test_fatfs_concurrent(const char* filename_prefix)
 
     printf("reading f1 and f2, writing f3 and f4\n");
 
-    xTaskCreatePinnedToCore(&read_write_task, "rw3", 2048, &args3, 3, NULL, cpuid_1);
-    xTaskCreatePinnedToCore(&read_write_task, "rw4", 2048, &args4, 3, NULL, cpuid_0);
-    xTaskCreatePinnedToCore(&read_write_task, "rw1", 2048, &args1, 3, NULL, cpuid_0);
-    xTaskCreatePinnedToCore(&read_write_task, "rw2", 2048, &args2, 3, NULL, cpuid_1);
+    xTaskCreatePinnedToCore(&read_write_task, "rw3", stack_size, &args3, 3, NULL, cpuid_1);
+    xTaskCreatePinnedToCore(&read_write_task, "rw4", stack_size, &args4, 3, NULL, cpuid_0);
+    xTaskCreatePinnedToCore(&read_write_task, "rw1", stack_size, &args1, 3, NULL, cpuid_0);
+    xTaskCreatePinnedToCore(&read_write_task, "rw2", stack_size, &args2, 3, NULL, cpuid_1);
 
     xSemaphoreTake(args1.done, portMAX_DELAY);
     printf("f1 done\n");
