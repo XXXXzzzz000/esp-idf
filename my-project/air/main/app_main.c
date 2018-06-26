@@ -25,13 +25,13 @@ static void initialize_filesystem()
     static wl_handle_t wl_handle;
     const esp_vfs_fat_mount_config_t mount_config = {
         .max_files = 4,
-        .format_if_mount_failed = true
-    };
+        .format_if_mount_failed = true};
     esp_err_t err = esp_vfs_fat_spiflash_mount(MOUNT_PATH,
-                    "storage",
-                    &mount_config,
-                    &wl_handle);
-    if (err != ESP_OK) {
+                                               "storage",
+                                               &mount_config,
+                                               &wl_handle);
+    if (err != ESP_OK)
+    {
         ESP_LOGE(TAG, "Failed to mount FATFS (0x%x)", err);
         return;
     }
@@ -41,7 +41,8 @@ static void initialize_filesystem()
 static void initialize_nvs()
 {
     esp_err_t err = nvs_flash_init();
-    if (err == ESP_ERR_NVS_NO_FREE_PAGES) {
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES)
+    {
         ESP_ERROR_CHECK(nvs_flash_erase());
         err = nvs_flash_init();
     }
@@ -95,7 +96,7 @@ static void initialize_console()
 }
 void console_task(void *parm)
 {
-    initialize_nvs();
+
 #if CONFIG_STORE_HISTORY
     initialize_filesystem();
 #endif
@@ -118,7 +119,8 @@ void console_task(void *parm)
 
     /* 找出终端是否支持转义序列 */
     int probe_status = linenoiseProbe();
-    if (probe_status) {
+    if (probe_status)
+    {
         /* 零表示成功 */
         printf("\n"
                "Your terminal application does not support escape sequences.\n"
@@ -131,11 +133,13 @@ void console_task(void *parm)
         prompt = "esp32> ";
 #endif //CONFIG_LOG_COLORS
     }
-    while (1) {
+    while (1)
+    {
         /* 使用linenoise获得一条线。 当按下ENTER时，该行将被返回。
          */
         char *line = linenoise(prompt);
-        if (line == NULL) {
+        if (line == NULL)
+        {
             /* Ignore empty lines */
             continue;
         }
@@ -149,13 +153,20 @@ void console_task(void *parm)
         /* 尝试运行该命令 */
         int ret;
         esp_err_t err = esp_console_run(line, &ret);
-        if (err == ESP_ERR_NOT_FOUND) {
+        if (err == ESP_ERR_NOT_FOUND)
+        {
             printf("Unrecognized command\n");
-        } else if (err == ESP_ERR_INVALID_ARG) {
+        }
+        else if (err == ESP_ERR_INVALID_ARG)
+        {
             // command was empty
-        } else if (err == ESP_OK && ret != ESP_OK) {
+        }
+        else if (err == ESP_OK && ret != ESP_OK)
+        {
             printf("Command returned non-zero error code: 0x%x\n", ret);
-        } else if (err != ESP_OK) {
+        }
+        else if (err != ESP_OK)
+        {
             printf("Internal error: 0x%x\n", err);
         }
         /* linenoise allocates line buffer on the heap, so need to free it */
@@ -175,6 +186,7 @@ void app_main()
     esp_log_level_set("TRANSPORT_SSL", ESP_LOG_VERBOSE);
     esp_log_level_set("TRANSPORT", ESP_LOG_VERBOSE);
     esp_log_level_set("OUTBOX", ESP_LOG_VERBOSE);
+    initialize_nvs();
     //初始化存储
     cmd_storge_init();
     //console 线程

@@ -22,7 +22,9 @@
 // #include "onenet_helper.h"
 #include "mqtt_client.h"
 extern esp_mqtt_client_handle_t client;
-
-void onenet_publish(esp_mqtt_client_handle_t client,char * name ,float val);
+//上传数据
+void onenet_publish(esp_mqtt_client_handle_t client, char *name, float val);
+//启动mqtt
 void mqtt_app_start(void);
+//初始化WiFi
 void air_wifi_init(void);
