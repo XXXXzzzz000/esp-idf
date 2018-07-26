@@ -1105,7 +1105,7 @@ BOOLEAN btm_ble_get_enc_key_type(BD_ADDR bd_addr, UINT8 *p_key_types)
 **
 ** Description      This function is called to read the local DIV
 **
-** Returns          TURE - if a valid DIV is availavle
+** Returns          TRUE - if a valid DIV is availavle
 *******************************************************************************/
 BOOLEAN btm_get_local_div (BD_ADDR bd_addr, UINT16 *p_div)
 {
@@ -1948,14 +1948,6 @@ void btm_ble_conn_complete(UINT8 *p, UINT16 evt_len, BOOLEAN enhanced)
             handle = HCID_GET_HANDLE (handle);
 
             btm_ble_connected(bda, handle, HCI_ENCRYPT_MODE_DISABLED, role, bda_type, match);
-            if(role == HCI_ROLE_SLAVE) {
-                //clear p_cb->state, controller will stop adv when ble connected.
-                tBTM_BLE_INQ_CB *p_cb = &btm_cb.ble_ctr_cb.inq_var;
-                if(p_cb) {
-                    p_cb->adv_mode = BTM_BLE_ADV_DISABLE;
-                    p_cb->state = BTM_BLE_STOP_ADV; 
-                }
-            }
             l2cble_conn_comp (handle, role, bda, bda_type, conn_interval,
                               conn_latency, conn_timeout);
 

@@ -254,12 +254,20 @@ bool IRAM_ATTR btdm_queue_generic_deregister(btdm_queue_item_t *queue)
 
 static void IRAM_ATTR interrupt_disable(void)
 {
-    portENTER_CRITICAL(&global_int_mux);
+    if (xPortInIsrContext()) {
+        portENTER_CRITICAL_ISR(&global_int_mux);
+    } else {
+        portENTER_CRITICAL(&global_int_mux);
+    }
 }
 
 static void IRAM_ATTR interrupt_restore(void)
 {
-    portEXIT_CRITICAL(&global_int_mux);
+    if (xPortInIsrContext()) {
+        portEXIT_CRITICAL_ISR(&global_int_mux);
+    } else {
+        portEXIT_CRITICAL(&global_int_mux);
+    }
 }
 
 static void IRAM_ATTR task_yield_from_isr(void)
@@ -575,9 +583,7 @@ static int IRAM_ATTR rand_wrapper(void)
 
 static uint32_t IRAM_ATTR btdm_lpcycles_2_us(uint32_t cycles)
 {
-    // Sanity check. The number of lp cycles should not be too high to avoid overflow. Thrs: 100s (for 32kHz freq)
-    assert(cycles < 3200000);
-
+    // The number of lp cycles should not lead to overflow. Thrs: 100s (for 32kHz freq)
     // clock measurement is conducted
     uint64_t us = (uint64_t)btdm_lpcycle_us * cycles;
     us = (us + (1 << (btdm_lpcycle_us_frac - 1))) >> btdm_lpcycle_us_frac;
@@ -589,9 +595,7 @@ static uint32_t IRAM_ATTR btdm_lpcycles_2_us(uint32_t cycles)
  */
 static uint32_t IRAM_ATTR btdm_us_2_lpcycles(uint32_t us)
 {
-    // Sanity check: the number of sleep duration(us) should not be too high to avoid overflow. Thrs: 100s
-    assert(us < 100000000);
-
+    // The number of sleep duration(us) should not lead to overflow. Thrs: 100s
     // Compute the sleep duration in us to low power clock cycles, with calibration result applied
     // clock measurement is conducted
     uint64_t cycles = ((uint64_t)(us) << btdm_lpcycle_us_frac) / btdm_lpcycle_us;
@@ -614,9 +618,6 @@ static void IRAM_ATTR btdm_sleep_enter_wrapper(void)
     if (btdm_controller_get_sleep_mode() == BTDM_MODEM_SLEEP_MODE_ORIG) {
         esp_modem_sleep_enter(MODEM_BLE_MODULE);
         esp_modem_sleep_enter(MODEM_CLASSIC_BT_MODULE);
-#ifdef CONFIG_PM_ENABLE
-        esp_pm_lock_release(s_pm_lock);
-#endif
     } else if (btdm_controller_get_sleep_mode() == BTDM_MODEM_SLEEP_MODE_EVED) {
         esp_modem_sleep_enter(MODEM_BLE_MODULE);
         // pause bluetooth baseband
@@ -627,9 +628,6 @@ static void IRAM_ATTR btdm_sleep_enter_wrapper(void)
 static void IRAM_ATTR btdm_sleep_exit_wrapper(void)
 {
     if (btdm_controller_get_sleep_mode() == BTDM_MODEM_SLEEP_MODE_ORIG) {
-#ifdef CONFIG_PM_ENABLE
-        esp_pm_lock_acquire(s_pm_lock);
-#endif
         esp_modem_sleep_exit(MODEM_BLE_MODULE);
         esp_modem_sleep_exit(MODEM_CLASSIC_BT_MODULE);
     } else if (btdm_controller_get_sleep_mode() == BTDM_MODEM_SLEEP_MODE_EVED) {
@@ -925,7 +923,14 @@ esp_err_t esp_bt_controller_enable(esp_bt_mode_t mode)
 
     esp_phy_load_cal_and_init(PHY_BT_MODULE);
 
-    if (btdm_controller_get_sleep_mode() == BTDM_MODEM_SLEEP_MODE_ORIG) {
+    if (btdm_controller_get_sleep_mode() == BTDM_MODEM_SLEEP_MODE_NONE) {
+        //Just register to sleep module, make the modem sleep modules check BT sleep status when sleep enter.
+        //Thus, it will prevent WIFI from disabling RF when BT is not in sleep but is using RF.
+        esp_modem_sleep_register(MODEM_BLE_MODULE);
+        esp_modem_sleep_register(MODEM_CLASSIC_BT_MODULE);
+        esp_modem_sleep_exit(MODEM_BLE_MODULE);
+        esp_modem_sleep_exit(MODEM_CLASSIC_BT_MODULE);
+    } else if (btdm_controller_get_sleep_mode() == BTDM_MODEM_SLEEP_MODE_ORIG) {
         esp_modem_sleep_register(MODEM_BLE_MODULE);
         esp_modem_sleep_register(MODEM_CLASSIC_BT_MODULE);
     } else if (btdm_controller_get_sleep_mode() == BTDM_MODEM_SLEEP_MODE_EVED) {
@@ -943,7 +948,8 @@ esp_err_t esp_bt_controller_enable(esp_bt_mode_t mode)
 
     ret = btdm_controller_enable(mode);
     if (ret) {
-        if (btdm_controller_get_sleep_mode() == BTDM_MODEM_SLEEP_MODE_ORIG) {
+        if (btdm_controller_get_sleep_mode() == BTDM_MODEM_SLEEP_MODE_NONE
+                || btdm_controller_get_sleep_mode() == BTDM_MODEM_SLEEP_MODE_ORIG) {
             esp_modem_sleep_deregister(MODEM_BLE_MODULE);
             esp_modem_sleep_deregister(MODEM_CLASSIC_BT_MODULE);
         } else if (btdm_controller_get_sleep_mode() == BTDM_MODEM_SLEEP_MODE_EVED) {
@@ -983,7 +989,8 @@ esp_err_t esp_bt_controller_disable(void)
     }
 
     if (ret == ESP_BT_MODE_IDLE) {
-        if (btdm_controller_get_sleep_mode() == BTDM_MODEM_SLEEP_MODE_ORIG) {
+        if (btdm_controller_get_sleep_mode() == BTDM_MODEM_SLEEP_MODE_NONE
+                || btdm_controller_get_sleep_mode() == BTDM_MODEM_SLEEP_MODE_ORIG) {
             esp_modem_sleep_deregister(MODEM_BLE_MODULE);
             esp_modem_sleep_deregister(MODEM_CLASSIC_BT_MODULE);
         } else if (btdm_controller_get_sleep_mode() == BTDM_MODEM_SLEEP_MODE_EVED) {

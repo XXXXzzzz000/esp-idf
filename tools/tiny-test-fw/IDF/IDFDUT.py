@@ -14,9 +14,12 @@
 
 """ DUT for IDF applications """
 import os
+import sys
 import re
 import subprocess
 import functools
+import serial
+from serial.tools import list_ports
 
 import DUT
 
@@ -40,6 +43,9 @@ class IDFDUT(DUT.SerialDUT):
     """ IDF DUT, extends serial with ESPTool methods """
 
     CHIP_TYPE_PATTERN = re.compile(r"Detecting chip type[.:\s]+(.+)")
+    # /dev/ttyAMA0 port is listed in Raspberry Pi
+    # /dev/tty.Bluetooth-Incoming-Port port is listed in Mac
+    INVALID_PORT_PATTERN = re.compile(r"AMA|Bluetooth")
 
     def __init__(self, name, port, log_file, app, **kwargs):
         self.download_config, self.partition_table = app.process_app_info()
@@ -124,3 +130,33 @@ class IDFDUT(DUT.SerialDUT):
              "--before", "default_reset", "--after", "hard_reset", "read_flash",
              _address, _size, output_file]
         )
+
+    @classmethod
+    def list_available_ports(cls):
+        ports = [x.device for x in list_ports.comports()]
+        espport = os.getenv('ESPPORT')
+        if not espport:
+            # It's a little hard filter out invalid port with `serial.tools.list_ports.grep()`:
+            # The check condition in `grep` is: `if r.search(port) or r.search(desc) or r.search(hwid)`.
+            # This means we need to make all 3 conditions fail, to filter out the port.
+            # So some part of the filters will not be straight forward to users.
+            # And negative regular expression (`^((?!aa|bb|cc).)*$`) is not easy to understand.
+            # Filter out invalid port by our own will be much simpler.
+            return [x for x in ports if not cls.INVALID_PORT_PATTERN.search(x)]
+
+        port_hint = espport.decode('utf8')
+
+        # If $ESPPORT is a valid port, make it appear first in the list
+        if port_hint in ports:
+            ports.remove(port_hint)
+            return [port_hint] + ports
+
+        # On macOS, user may set ESPPORT to /dev/tty.xxx while
+        # pySerial lists only the corresponding /dev/cu.xxx port
+        if sys.platform == 'darwin' and 'tty.' in port_hint:
+            port_hint = port_hint.replace('tty.', 'cu.')
+            if port_hint in ports:
+                ports.remove(port_hint)
+                return [port_hint] + ports
+
+        return ports
